@@ -9,10 +9,10 @@ CFLAGS := -Wall -Wextra -I$(SRC_DIR)
 LDFLAGS :=
 
 # Find all .c files in the neuralc directory
-SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
+SRC_FILES := $(shell find $(SRC_DIR) -name '*.c')
 
 # Define the corresponding object files in the build directory
-OBJ_FILES := $(SRC_FILES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+OBJ_FILES := $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC_FILES:.c=.o))
 
 # Define the final executable name
 TARGET := $(OUT_DIR)/neuralc
@@ -27,7 +27,7 @@ $(TARGET): $(OBJ_FILES)
 
 # Compile the .c files to .o files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean up object files and the executable
