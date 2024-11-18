@@ -1,38 +1,14 @@
-# Define the source and object directories
-SRC_DIR := neuralc
-OBJ_DIR := build
-OUT_DIR := bin
+BUILD_DIR := build
+BIN_DIR := bin
 
-# Compiler and flags
-CC := gcc
-CFLAGS := -Wall -Wextra -I$(SRC_DIR)
-LDFLAGS :=
+.PHONY: all clean run
 
-# Find all .c files in the neuralc directory
-SRC_FILES := $(shell find $(SRC_DIR) -name '*.c')
+all:
+	mkdir -p $(BUILD_DIR) 
+	cd $(BUILD_DIR) && cmake .. && cmake --build .
 
-# Define the corresponding object files in the build directory
-OBJ_FILES := $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SRC_FILES:.c=.o))
-
-# Define the final executable name
-TARGET := $(OUT_DIR)/neuralc
-
-# Default target: build the executable
-all: $(TARGET)
-
-# Link the object files to create the executable
-$(TARGET): $(OBJ_FILES)
-	@mkdir -p $(OUT_DIR)
-	$(CC) $(OBJ_FILES) -o $(TARGET) $(LDFLAGS)
-
-# Compile the .c files to .o files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Clean up object files and the executable
 clean:
-	rm -rf $(OBJ_DIR) $(OUT_DIR)
+	rm -rf -- $(BUILD_DIR) $(BIN_DIR)
 
-.PHONY: all clean
-
+run:
+	@$(BUILD_DIR)/${BIN_DIR}/neuralc
