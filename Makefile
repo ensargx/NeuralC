@@ -5,7 +5,7 @@ OUT_DIR := bin
 
 # Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Wextra
+CFLAGS := -Wall -Wextra -I$(SRC_DIR)
 LDFLAGS :=
 
 # Find all .c files in the neuralc directory
