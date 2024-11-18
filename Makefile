@@ -11,4 +11,4 @@ clean:
 	rm -rf -- $(BUILD_DIR) $(BIN_DIR)
 
 run:
-	@$(BUILD_DIR)/${BIN_DIR}/neuralc
+	@$(BUILD_DIR)/${BIN_DIR}/neuralc $(ARGS)
