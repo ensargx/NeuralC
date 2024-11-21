@@ -4,11 +4,11 @@
 #include <stdarg.h>
 #include <time.h>
 
-void log_message(const char* level, const char* fmt, ...)
+void log_message(const char* level, const char* fmt, va_list args)
 {
     time_t now;
     struct tm *timeinfo;
-    char timeStr[20];
+    char timeStr[32];
     
     time(&now);
     timeinfo = localtime(&now);
@@ -16,10 +16,7 @@ void log_message(const char* level, const char* fmt, ...)
 
     printf("[%s] [%s] ", timeStr, level);
 
-    va_list args;
-    va_start(args, fmt);
     vprintf(fmt, args);
-    va_end(args);
 
     printf("\n");
 }
