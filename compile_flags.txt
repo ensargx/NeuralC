@@ -1,0 +1,3 @@
+-Ineuralc
+-Wall
+-Wextra
