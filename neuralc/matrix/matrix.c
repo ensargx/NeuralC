@@ -8,7 +8,7 @@ void matrix_init(matrix *pMatrix, int rows, int cols)
 {
     if (rows < 0 || cols < 0)
     {
-        log_error("[%s]: Wrong parameters: rows || cols", __FUNCTION__);
+        log_error("%s: Wrong parameters: rows || cols", __FUNCTION__);
         return;
     }
 
@@ -39,3 +39,30 @@ matrix matrix_copy(matrix* pMatrix)
 
     return mat;
 }  
+
+double matrix_get(matrix *pMatrix, int x, int y)
+{
+    if ( x > pMatrix->rows || y > pMatrix->cols )
+    {
+        log_error("matrix_get: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
+                x, pMatrix->rows, y, pMatrix->cols);
+        return 0;
+    }
+
+    return pMatrix->data[ x * pMatrix->cols + y ];
+}
+
+void matrix_set(matrix *pMatrix, int x, int y, double value)
+{
+    if ( x > pMatrix->rows || y > pMatrix->cols )
+    {
+        log_error("matrix_get: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
+                x, pMatrix->rows, y, pMatrix->cols);
+        return;
+    }
+
+    pMatrix->data[ x * pMatrix->cols + y ] = value;
+
+    return;
+}
+

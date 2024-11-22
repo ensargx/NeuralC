@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct matrix_t
+typedef struct
 {
     int rows;
     int cols;
@@ -29,7 +29,7 @@ matrix matrix_copy(matrix* pMatrix);
 
 /**
  * Gets the given element of the matrix.
- * Equalivent of `matrix->data[x * matrix->rows + y]`
+ * Equivalent to `matrix->data[x * matrix->rows + y];`
  *
  * Parameters:
  * x: row number.
@@ -39,6 +39,6 @@ double matrix_get(matrix *pMatrix, int x, int y);
 
 /**
  * Set a value of the matrix.
- * Equal to `matrix->data[x * matrix->rows + y] = value`
+ * Equivalent to `matrix->data[x * matrix->rows + y] = value;`
 */
 void matrix_set(matrix *pMatrix, int x, int y, double value);
