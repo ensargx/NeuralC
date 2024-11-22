@@ -11,6 +11,7 @@ file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.c")
 
 include_directories(${SRC_DIR})
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(neuralc ${SRC_FILES})
