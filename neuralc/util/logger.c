@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <time.h>
 
-void log_message(const char* level, const char* fmt, va_list args)
+void log_message(LogLevel level, const char* fmt, va_list args)
 {
     time_t now;
     struct tm *timeinfo;
@@ -14,7 +14,24 @@ void log_message(const char* level, const char* fmt, va_list args)
     timeinfo = localtime(&now);
     strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", timeinfo);
 
-    printf("[%s] [%s] ", timeStr, level);
+    const char* szLevel;
+    switch (level)
+    {
+        case DEBUG:
+            szLevel = "DEBUG";
+            break;
+        case WARN:
+            szLevel = "WARNING";
+            break;
+        case ERROR:
+            szLevel = "ERROR";
+            break;
+        default:
+            szLevel = "LOG";
+            break;
+    }
+
+    printf("[%s] [%s] ", timeStr, szLevel);
 
     vprintf(fmt, args);
 
@@ -25,7 +42,7 @@ void log_debug(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log_message("DEBUG", fmt, args);
+    log_message(DEBUG, fmt, args);
     va_end(args);
 }
 
@@ -33,7 +50,7 @@ void log_error(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log_message("ERROR", fmt, args);
+    log_message(ERROR, fmt, args);
     va_end(args);
 }
 
@@ -41,7 +58,7 @@ void log_warn(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    log_message("WARN", fmt, args);
+    log_message(WARN, fmt, args);
     va_end(args);
 }
 

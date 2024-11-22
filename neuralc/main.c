@@ -5,8 +5,6 @@ int main()
 {
     log_debug("Testing...");
 
-    log_message("[AAA]", "test: %s\n", "Ensar");
-
     matrix mat;
 
     matrix_init(&mat, 5, 10);
