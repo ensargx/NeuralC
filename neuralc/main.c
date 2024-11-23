@@ -1,7 +1,5 @@
 #include "util/logger.h"
 #include "matrix/matrix.h"
-#include "matrix/matrix.h"
-#include "util/logger.h"
 
 int main()
 {
