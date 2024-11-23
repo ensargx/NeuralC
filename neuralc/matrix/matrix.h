@@ -25,7 +25,7 @@ void matrix_destroy(matrix *pMatrix);
 /** 
  * Creates a copy of the given matrix.
 */
-matrix matrix_copy(matrix* pMatrix);
+matrix matrix_copy(matrix matrix);
 
 /**
  * Gets the given element of the matrix.
@@ -68,3 +68,16 @@ int matrix_dot(matrix* pOut, matrix x, matrix y);
 */
 matrix matrix_create_random(int rows, int cols, double lower, double upper, int seed);
 
+/**
+ * Swaps 2 matrixes
+*/
+void matrix_swap(matrix *pMat1, matrix *pMat2);
+
+/**
+ * Adds mat2 for each row of mat1.
+ * It is expected that `mat2.rows == 1` and 
+ * `mat2.cols == mat1.cols`.
+ * This will iterate every row and add corresponding
+ * values.
+*/
+void matrix_add_row(matrix mat1, matrix mat2);

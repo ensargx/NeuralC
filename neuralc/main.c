@@ -45,7 +45,7 @@ int main()
         for (int j = 0; j < dot.cols; ++j)
         {
             double val = matrix_get(dot, i, j);
-            log_debug("matrix[%d][%d] = %lf", i, j, matrix_get(dot, i, j));
+            log_debug("matrix[%d][%d] = %lf", i, j, val);
         }
     }
 

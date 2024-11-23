@@ -58,3 +58,19 @@ ai_activation ai_activation_find(const char* name)
 }
 
 #undef NUM_ACTIVATIONS
+
+void ai_activation_apply_matrix_column(matrix mat, ai_activation activation)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(mat, i, j);
+            double new = activation.calculate(val);
+            matrix_set(mat, i, j, new);
+        }
+    }
+
+    return;
+}
+

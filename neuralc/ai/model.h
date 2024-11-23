@@ -2,6 +2,7 @@
 
 #include "layer.h"
 #include "activation.h"
+#include "data.h"
 #include "matrix/matrix.h"
 
 /**
@@ -17,6 +18,13 @@ typedef struct
     matrix* biases;
     ai_activation activation;
 } ai_model;
+
+/**
+ * Predicts data from given model and data.
+ * Returns a matrix with rows of `data->rows` and 
+ * cols of `model->layers[num_layers-1].num_nodes`.
+*/
+matrix ai_model_predict(ai_model model, ai_data data);
 
 
 

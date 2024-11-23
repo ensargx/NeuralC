@@ -29,15 +29,15 @@ void matrix_destroy(matrix *pMatrix)
     return;
 }
 
-matrix matrix_copy(matrix* pMatrix)
+matrix matrix_copy(matrix mat)
 {
-    matrix mat;
+    matrix res;
 
-    matrix_init(&mat, pMatrix->rows, pMatrix->cols);
+    matrix_init(&res, mat.rows, mat.cols);
 
-    memcpy(&mat.data, pMatrix->data, pMatrix->rows * pMatrix->cols * sizeof(double));
+    memcpy(&res.data, mat.data, mat.rows * mat.cols * sizeof(double));
 
-    return mat;
+    return res;
 }  
 
 double matrix_get(matrix matrix, int x, int y)
@@ -120,3 +120,39 @@ matrix matrix_create_random(int rows, int cols, double lower, double upper, int 
     return mat;
 }
 
+void matrix_swap(matrix *pMat1, matrix *pMat2)
+{
+    int rows1 = pMat1->rows;
+    int cols1 = pMat1->cols;
+    double *data1 = pMat1->data;
+
+    pMat1->rows = pMat2->rows;
+    pMat1->cols = pMat2->cols;
+    pMat1->data = pMat2->data;
+
+    pMat2->rows = rows1;
+    pMat2->cols = cols1;
+    pMat2->data = data1;
+}
+
+void matrix_add_row(matrix mat1, matrix mat2)
+{
+    if ( mat2.rows != 1 || mat2.cols != mat1.cols )
+    {
+        log_error("%s: Matrixes not aligned properly!", __FUNCTION__);
+        return;
+    }
+
+    for (int i = 0; i < mat1.rows; i++)
+    {
+        for (int j = 0; j < mat2.cols; ++j)
+        {
+            double v1 = matrix_get(mat1, i, j);
+            double v2 = matrix_get(mat2, 1, j);
+
+            matrix_set(mat1, i, j, v1 + v2);
+        }
+    }
+
+    return;
+}
