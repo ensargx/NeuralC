@@ -1,7 +1,7 @@
 #pragma once
 
-#include "layers.h"
 #include "activation.h"
+#include "matrix/matrix.h"
 
 /**
  * Every AI model should be respesentable in binary.
@@ -12,6 +12,8 @@
 
 typedef struct
 {
+    int num_layers;
+    matrix* weights;
+    matrix* biases;
     ai_activation activation;
-    ai_layers layers;
 } ai_model;
