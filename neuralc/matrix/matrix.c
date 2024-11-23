@@ -40,29 +40,59 @@ matrix matrix_copy(matrix* pMatrix)
     return mat;
 }  
 
-double matrix_get(matrix *pMatrix, int x, int y)
+double matrix_get(matrix matrix, int x, int y)
 {
-    if ( x > pMatrix->rows || y > pMatrix->cols )
+    if ( x > matrix.rows || y > matrix.cols )
     {
-        log_error("matrix_get: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
-                x, pMatrix->rows, y, pMatrix->cols);
+        log_error("%s: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
+                __FUNCTION__, x, matrix.rows, y, matrix.cols);
         return 0;
     }
 
-    return pMatrix->data[ x * pMatrix->cols + y ];
+    return matrix.data[ x * matrix.cols + y ];
 }
 
-void matrix_set(matrix *pMatrix, int x, int y, double value)
+void matrix_set(matrix matrix, int x, int y, double value)
 {
-    if ( x > pMatrix->rows || y > pMatrix->cols )
+    if ( x > matrix.rows || y > matrix.cols )
     {
-        log_error("matrix_get: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
-                x, pMatrix->rows, y, pMatrix->cols);
+        log_error("%s: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
+                __FUNCTION__, x, matrix.rows, y, matrix.cols);
         return;
     }
 
-    pMatrix->data[ x * pMatrix->cols + y ] = value;
+    matrix.data[ x * matrix.cols + y ] = value;
 
     return;
 }
 
+int matrix_dot(matrix* pOut, matrix x, matrix y)
+{
+    if ( x.cols != y.rows )
+    {
+        log_error("%s: Matrixes cannot be dot producted! x.cols: %d, y.rows: %d.",
+                __FUNCTION__, x.cols, y.rows);
+        return 0;
+    }
+
+    // destroy pOut if not null
+    if ( pOut->data != 0 )
+        free( pOut->data );
+
+    matrix_init(pOut, x.rows, y.cols);
+
+    for (int i = 0; i < pOut->rows; ++i)
+    {
+        for (int j = 0; j < pOut->cols; ++j)
+        {
+            double val = 0;
+            for (int h = 0; h < x.cols; ++h)
+            {
+                val += matrix_get(x, i, h) * matrix_get(y, h, j);
+            }
+            matrix_set(*pOut, i, j, val);
+        }
+    }
+
+    return 1;
+}
