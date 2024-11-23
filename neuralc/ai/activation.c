@@ -38,9 +38,23 @@ ai_activation activation_relu = {
     .params = 0
 };
 
+
+#define NUM_ACTIVATIONS 2
+
 ai_activation ai_activation_find(const char* name)
 {
-    if ( strcmp(name, activation_relu.name) == 0 )
-        return activation_relu;
+    ai_activation arr_activations[NUM_ACTIVATIONS] = {
+        activation_tanh,
+        activation_relu
+    };
 
+    for (int i = 0; i < NUM_ACTIVATIONS; ++i)
+    {
+        if ( strcmp(name, arr_activations[i].name) == 0 )
+            return arr_activations[i];
+    }
+
+    return activation_tanh;
 }
+
+#undef NUM_ACTIVATIONS

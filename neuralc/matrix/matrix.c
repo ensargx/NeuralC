@@ -96,3 +96,27 @@ int matrix_dot(matrix* pOut, matrix x, matrix y)
 
     return 1;
 }
+
+matrix matrix_create_random(int rows, int cols, double lower, double upper, int seed)
+{
+    matrix mat;
+
+    matrix_init(&mat, rows, cols);
+
+    srand(seed);
+
+    double range = upper - lower;
+    double div = RAND_MAX / range;
+
+    for (int i = 0; i < rows; ++i)
+    {
+        for (int j = 0; j < cols; ++j)
+        {
+            double val = lower + (rand() / div);
+            matrix_set(mat, i, j, val);
+        }
+    }
+
+    return mat;
+}
+

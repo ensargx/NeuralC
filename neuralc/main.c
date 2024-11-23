@@ -50,5 +50,15 @@ int main()
     }
 
 
+    matrix w1 = matrix_create_random(3, 5, -1, 1, 54);
+
+    for (int i = 0; i < w1.rows; ++i)
+    {
+        for (int j = 0; j < w1.cols; ++j)
+        {
+            log_debug("w1[%d][%d] = %lf", i, j, matrix_get(w1, i, j));
+        }
+    }
+
     return 0;
 }

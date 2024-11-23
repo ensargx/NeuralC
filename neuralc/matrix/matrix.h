@@ -62,3 +62,9 @@ void matrix_set(matrix matrix, int x, int y, double value);
 */
 int matrix_dot(matrix* pOut, matrix x, matrix y);
 
+/**
+ * Creates a matrix with random variables with given seed.
+ * Returns the same matrix if the seed is same.
+*/
+matrix matrix_create_random(int rows, int cols, double lower, double upper, int seed);
+

@@ -12,6 +12,6 @@ extern ai_activation activation_tanh;
 extern ai_activation activation_relu;
 
 /**
- * Find activation from name.
+ * Find activation from name. Defaults to `tanh`.
 */
 ai_activation ai_activation_find(const char* name);
