@@ -1,7 +1,6 @@
 #pragma once
 
 #include "activation.h"
-#include "data.h"
 #include "matrix/matrix.h"
 
 /**
@@ -22,7 +21,7 @@ typedef struct
  * Returns a matrix with rows of `data->rows` and 
  * cols of `model->layers[num_layers-1].num_nodes`.
 */
-matrix ai_model_predict(ai_model model, ai_data data);
+matrix ai_model_predict(ai_model model, matrix data);
 
 
 

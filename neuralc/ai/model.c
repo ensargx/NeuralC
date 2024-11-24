@@ -2,10 +2,10 @@
 #include "matrix/matrix.h"
 #include "util/logger.h"
 
-matrix ai_model_predict(ai_model model, ai_data aidata)
+matrix ai_model_predict(ai_model model, matrix data)
 {
     matrix dot_out = { 0 };
-    matrix vars = matrix_copy(aidata.data);
+    matrix vars = matrix_copy(data);
 
     for (int i = 0; i < model.num_layers - 1; ++i)
     {

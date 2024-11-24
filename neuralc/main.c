@@ -43,23 +43,23 @@ int main()
 
     model.biases = matb;
 
-    ai_data data;
+    matrix matx;
 
-    data.rows = 5;
+    matrix_init(&matx, 5, 2);
+    matrix_set(matx, 0, 0, 0.5);
+    matrix_set(matx, 1, 0, 0.2);
+    matrix_set(matx, 2, 0, -0.7);
+    matrix_set(matx, 3, 0, 0.9);
+    matrix_set(matx, 4, 0, -0.4);
 
-    matrix *matx = malloc(sizeof(matrix));
-
-    matrix_init(matx, 5, 1);
-    matrix_set(*matx, 0, 0, 0.5);
-    matrix_set(*matx, 1, 0, 0.2);
-    matrix_set(*matx, 2, 0, -0.7);
-    matrix_set(*matx, 3, 0, 0.9);
-    matrix_set(*matx, 4, 0, -0.4);
-
-    data.data = *matx;
+    matrix_set(matx, 0, 1, 0.1);
+    matrix_set(matx, 1, 1, 0.2);
+    matrix_set(matx, 2, 1, 0);
+    matrix_set(matx, 3, 1, 0.9);
+    matrix_set(matx, 4, 1, -0.4);
 
     log_debug("Predicting model.");
-    matrix y = ai_model_predict(model, data);
+    matrix y = ai_model_predict(model, matx);
 
     log_debug("result matrix matrix: rows: %d, cols: %d",y.rows, y.cols);
 
