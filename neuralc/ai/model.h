@@ -1,6 +1,5 @@
 #pragma once
 
-#include "layer.h"
 #include "activation.h"
 #include "data.h"
 #include "matrix/matrix.h"
@@ -13,7 +12,6 @@
 typedef struct
 {
     int num_layers;
-    ai_layer *layers;
     matrix* weights;
     matrix* biases;
     ai_activation activation;

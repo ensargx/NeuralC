@@ -75,8 +75,8 @@ void matrix_swap(matrix *pMat1, matrix *pMat2);
 
 /**
  * Adds mat2 for each row of mat1.
- * It is expected that `mat2.rows == 1` and 
- * `mat2.cols == mat1.cols`.
+ * It is expected that `mat2.cols == 1` and 
+ * `mat2.rows == mat1.rows`.
  * This will iterate every row and add corresponding
  * values.
 */

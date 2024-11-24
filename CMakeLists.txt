@@ -16,3 +16,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(neuralc ${SRC_FILES})
 
+# include the math library required for math.h
+find_library(MATH_LIBRARY m)
+if(MATH_LIBRARY)
+    target_link_libraries(neuralc PUBLIC ${MATH_LIBRARY})
+endif()
+

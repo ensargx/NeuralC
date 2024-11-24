@@ -35,7 +35,7 @@ matrix matrix_copy(matrix mat)
 
     matrix_init(&res, mat.rows, mat.cols);
 
-    memcpy(&res.data, mat.data, mat.rows * mat.cols * sizeof(double));
+    memcpy(res.data, mat.data, mat.rows * mat.cols * sizeof(double));
 
     return res;
 }  
@@ -137,20 +137,21 @@ void matrix_swap(matrix *pMat1, matrix *pMat2)
 
 void matrix_add_row(matrix mat1, matrix mat2)
 {
-    if ( mat2.rows != 1 || mat2.cols != mat1.cols )
+    if ( mat2.cols != 1 || mat2.rows != mat1.rows )
     {
-        log_error("%s: Matrixes not aligned properly!", __FUNCTION__);
+        log_error("%s: Matrixes not aligned properly! mat2.rows: %d, mat2.cols: %d, mat1.rows: %d, mat1.cols: %d",
+                __FUNCTION__, mat2.rows, mat2.cols, mat1.rows, mat1.cols);
         return;
     }
 
-    for (int i = 0; i < mat1.rows; i++)
+    for (int i = 0; i < mat1.cols ; i++)
     {
-        for (int j = 0; j < mat2.cols; ++j)
+        for (int j = 0; j < mat2.rows ; ++j)
         {
-            double v1 = matrix_get(mat1, i, j);
-            double v2 = matrix_get(mat2, 1, j);
+            double v1 = matrix_get(mat1, j, i);
+            double v2 = matrix_get(mat2, j, 0);
 
-            matrix_set(mat1, i, j, v1 + v2);
+            matrix_set(mat1, j, i, v1 + v2);
         }
     }
 
