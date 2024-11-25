@@ -16,6 +16,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(neuralc ${SRC_FILES})
 
+# Warnings and errors
+target_compile_options(neuralc PRIVATE
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>
+)
+
 # include the math library required for math.h
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
