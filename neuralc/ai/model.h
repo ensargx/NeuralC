@@ -24,5 +24,7 @@ typedef struct
 matrix ai_model_predict(ai_model model, matrix data);
 
 
+void ai_model_train_gd(ai_model model, matrix data, matrix value);
+
 
 

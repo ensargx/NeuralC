@@ -81,3 +81,18 @@ void matrix_swap(matrix *pMat1, matrix *pMat2);
  * values.
 */
 void matrix_add_row(matrix mat1, matrix mat2);
+
+/**
+ * Creates the transpose of a given matrix.
+ * Initialize the pout matrix with `matrix trans = { 0 };`.
+ * Also call `matrix_destroy( &out );` to free memory.
+ *
+ * Parameters:
+ * - pOut: Output matrix, if data is not empty,
+ *   it'll be destroyed.
+ * - matrix: matrix to take its transpose.
+ *
+ * Returns:
+ * pOut matrix.
+*/
+matrix matrix_transpose(matrix *pOut, matrix mat);

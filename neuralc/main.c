@@ -72,18 +72,16 @@ int main()
     matrix_set(matx, 3, 0, 0.9);
     matrix_set(matx, 4, 0, -0.4);
 
-    log_debug("Predicting model.");
-    matrix y = ai_model_predict(model, matx);
+    matrix vals;
+    matrix_init(&vals, 4, 1);
+    matrix_set(vals, 0, 0, 0);
+    matrix_set(vals, 1, 0, 1);
+    matrix_set(vals, 2, 0, 0);
+    matrix_set(vals, 3, 0, 0);
 
-    log_debug("result matrix matrix: rows: %d, cols: %d",y.rows, y.cols);
+    log_debug("vals.cols: %d", vals.cols);
 
-    for (int i = 0; i < y.rows; ++i)
-    {
-        for (int j = 0; j < y.cols; ++j)
-        {
-            log_debug("matrix[%d][%d] = %lf", i, j, matrix_get(y, i, j));
-        }
-    }
+    ai_model_train_gd(model, matx, vals);
 
     return 0;
 }

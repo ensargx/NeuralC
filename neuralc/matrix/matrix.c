@@ -157,3 +157,18 @@ void matrix_add_row(matrix mat1, matrix mat2)
 
     return;
 }
+
+matrix matrix_transpose(matrix *pOut, matrix mat)
+{
+    if ( pOut->data != 0 )
+        free( pOut->data );
+
+    matrix_init( pOut, mat.cols, mat.rows );
+
+    for (int i = 0; i < mat.cols; ++i)
+        for (int j = 0; j < mat.rows; ++j)
+            matrix_set(*pOut, i, j, matrix_get(mat, j, i));
+
+    return *pOut;
+}
+
