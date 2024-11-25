@@ -42,7 +42,7 @@ matrix matrix_copy(matrix mat)
 
 double matrix_get(matrix matrix, int x, int y)
 {
-    if ( x > matrix.rows || y > matrix.cols )
+    if ( x >= matrix.rows || y >= matrix.cols )
     {
         log_error("%s: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
                 __FUNCTION__, x, matrix.rows, y, matrix.cols);
@@ -54,7 +54,7 @@ double matrix_get(matrix matrix, int x, int y)
 
 void matrix_set(matrix matrix, int x, int y, double value)
 {
-    if ( x > matrix.rows || y > matrix.cols )
+    if ( x >= matrix.rows || y >= matrix.cols )
     {
         log_error("%s: parameters out of bound. x: %d, rows: %d, y: %d, cols: %d.",
                 __FUNCTION__, x, matrix.rows, y, matrix.cols);
