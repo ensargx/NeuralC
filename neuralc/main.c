@@ -1,87 +1,36 @@
-#include "ai/activation.h"
-#include "ai/model.h"
 #include "matrix/matrix.h"
-#include "util/logger.h"
-#include <stdlib.h>
+
+matrix read_from_file();
 
 int main()
 {
-    log_debug("Testing...");
+    int n = 28;
+    matrix w1;
+    matrix b1;
+    matrix_init(&w1, 32, n*n+1);
+    matrix_init(&b1, 1, n*n+2);
 
-    ai_model model;
+    matrix w2;
+    matrix b2;
+    matrix_init(&w2, 10, 32);
+    matrix_init(&b2, 1, 32);
 
-    model.num_layers = 3;
-    model.activation = activation_tanh;
+    matrix x = read_from_file();
 
-    matrix *matw = malloc(sizeof(matrix) * 2);;
+    // z1 = W1 * x + b1
+    matrix z1 = { 0 };
+    matrix_dot(&z1, w1, x);
+    matrix_add_row(z1, b1);
+    // a1 = tanh(z1)
+    matrix a1 = z1;
+    matrix_tanh(a1);
 
-    matrix_init(&matw[0], 3, 5);
-    matrix_set(matw[0], 0, 0, 0.2);
-    matrix_set(matw[0], 1, 0, -0.5);
-    matrix_set(matw[0], 2, 0, 0.7);
-    matrix_set(matw[0], 0, 1, -0.1);
-    matrix_set(matw[0], 1, 1, 0.3);
-    matrix_set(matw[0], 2, 1, -0.4);
-    matrix_set(matw[0], 0, 2, 0.4);
-    matrix_set(matw[0], 1, 2, -0.2);
-    matrix_set(matw[0], 2, 2, 0.1);
-    matrix_set(matw[0], 0, 3, 0.5);
-    matrix_set(matw[0], 1, 3, 0.1);
-    matrix_set(matw[0], 2, 3, -0.6);
-    matrix_set(matw[0], 0, 4, -0.3);
-    matrix_set(matw[0], 1, 4, 0.6);
-    matrix_set(matw[0], 2, 4, 0.2);
+    // z2 = W2 * a1 + b2
+    matrix z2 = { 0 };
+    matrix_dot(&z2, w2, a1);
+    matrix_add_row(z2, b2);
+    // a2 = sigmoid(z2)
+    matrix a2 = z2;
+    matrix_sigmoid(a2);
 
-    matrix_init(&matw[1], 4, 3);
-    matrix_set(matw[1], 0, 0, 0.3);
-    matrix_set(matw[1], 1, 0, -0.6);
-    matrix_set(matw[1], 2, 0, 0.2);
-    matrix_set(matw[1], 3, 0, 0.1);
-    matrix_set(matw[1], 0, 1, -0.2);
-    matrix_set(matw[1], 1, 1, 0.5);
-    matrix_set(matw[1], 2, 1, -0.3);
-    matrix_set(matw[1], 3, 1, 0.6);
-    matrix_set(matw[1], 0, 2, 0.4);
-    matrix_set(matw[1], 1, 2, -0.1);
-    matrix_set(matw[1], 2, 2, 0.7);
-    matrix_set(matw[1], 3, 2, -0.5);
-
-    model.weights = matw;
-
-    matrix* matb = malloc(sizeof(matrix) * 2);
-
-    matrix_init(&matb[0], 3, 1);
-    matrix_set(matb[0], 0, 0, 0.1);
-    matrix_set(matb[0], 1, 0, -0.2);
-    matrix_set(matb[0], 2, 0, 0.3);
-
-    matrix_init(&matb[1], 4, 1);
-    matrix_set(matb[1], 0, 0, 0.05);
-    matrix_set(matb[1], 1, 0, -0.15);
-    matrix_set(matb[1], 2, 0, 0.25);
-    matrix_set(matb[1], 3, 0, 0.1);
-
-    model.biases = matb;
-
-    matrix matx;
-
-    matrix_init(&matx, 5, 1);
-    matrix_set(matx, 0, 0, 0.5);
-    matrix_set(matx, 1, 0, 0.2);
-    matrix_set(matx, 2, 0, -0.7);
-    matrix_set(matx, 3, 0, 0.9);
-    matrix_set(matx, 4, 0, -0.4);
-
-    matrix vals;
-    matrix_init(&vals, 4, 1);
-    matrix_set(vals, 0, 0, 0);
-    matrix_set(vals, 1, 0, 1);
-    matrix_set(vals, 2, 0, 0);
-    matrix_set(vals, 3, 0, 0);
-
-    log_debug("vals.cols: %d", vals.cols);
-
-    ai_model_train_gd(model, matx, vals);
-
-    return 0;
 }

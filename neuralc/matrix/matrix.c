@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -172,3 +173,33 @@ matrix matrix_transpose(matrix *pOut, matrix mat)
     return *pOut;
 }
 
+void matrix_tanh(matrix mat)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(mat, i, j);
+            double new = tanh(val);
+            matrix_set(mat, i, j, new);
+        }
+    }
+}
+
+double sigmoid(double val)
+{
+    return 1.0 / (1.0 + exp(-val));
+}
+
+void matrix_sigmoid(matrix mat)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(mat, i, j);
+            double new = sigmoid(val);
+            matrix_set(mat, i, j, new);
+        }
+    }
+}

@@ -96,3 +96,8 @@ void matrix_add_row(matrix mat1, matrix mat2);
  * pOut matrix.
 */
 matrix matrix_transpose(matrix *pOut, matrix mat);
+
+void matrix_tanh(matrix mat);
+void matrix_sigmoid(matrix mat);
+
+
