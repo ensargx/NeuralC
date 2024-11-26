@@ -1,5 +1,6 @@
 #include "matrix/matrix.h"
 #include "util/logger.h"
+#include <math.h>
 #include <signal.h>
 #include <stdlib.h>
 
@@ -31,7 +32,7 @@ int main()
     log_debug("y matrix: row count: %d, column count: %d", y.rows, y.cols);
 
     //      (32xn*n) * ( n*n, A ) + ( 1, 32 )
-    // z1 = W1 * x + b1
+    // z1 = W1 * x + b1 = ( 32, A )
     matrix z1 = { 0 };
     matrix_dot(&z1, w1, x);
     matrix_add_row(z1, b1);
@@ -67,9 +68,21 @@ int main()
         matrix_set(loss, 0, i, l / x.rows);
     }
 
-    // print loss
-    for (int i = 0; i < loss.rows; ++i)
-        for(int j = 0; j < loss.cols; ++j)
-            log_debug("loss[%d][%d] = %lf", i, j, matrix_get(loss, i, j));
+
+    matrix dL_da2;
+    matrix_init(&dL_da2, a2.rows, a2.cols);
+    for (int i = 0; i < dL_da2.rows; ++i)
+    {
+        for(int j = 0; j < dL_da2.cols; ++j)
+        {
+            double val_a2 = matrix_get(a2, i, j);
+            double val_y = 0;
+            if (matrix_get(y, 0, j) == i)
+                val_y = 1;
+            matrix_set(dL_da2, i, j, val_a2 - val_y);
+        }
+    }
+
+
 
 }
