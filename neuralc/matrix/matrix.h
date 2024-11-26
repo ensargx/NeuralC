@@ -97,7 +97,22 @@ void matrix_add_row(matrix mat1, matrix mat2);
 */
 matrix matrix_transpose(matrix *pOut, matrix mat);
 
+/**
+ * Apply tanh function for every element in a matrix.
+*/
 void matrix_tanh(matrix mat);
+
+/**
+ * Apply sigmoid function for every element in matrix.
+*/
 void matrix_sigmoid(matrix mat);
 
+/**
+ * Read a csv file and translate it to matrix.
+ *
+ * Parameters:
+ * - filename: file path of the csv.
+ * - labeled: if the data is labeled, 1 else 0.
+*/
+matrix matrix_read_csv(const char* filename, int labeled);
 

@@ -1,6 +1,5 @@
 #include "matrix/matrix.h"
-
-matrix read_from_file();
+#include "util/logger.h"
 
 int main()
 {
@@ -15,7 +14,8 @@ int main()
     matrix_init(&w2, 10, 32);
     matrix_init(&b2, 1, 32);
 
-    matrix x = read_from_file();
+    matrix x = matrix_read_csv("data/mnist_test.csv", 1);
+    log_debug("x matrix: row count: %d, column count: %d", x.rows, x.cols);
 
     // z1 = W1 * x + b1
     matrix z1 = { 0 };

@@ -53,7 +53,7 @@ matrix ai_model_predict(ai_model model, matrix data)
 void ai_model_train_gd(ai_model model, matrix data, matrix value)
 {
     matrix dot_out = { 0 };
-    matrix deriv = { 0 };
+    // matrix deriv = { 0 };
     matrix vars = matrix_copy(data);
 
     for (int i = 0; i < model.num_layers - 1; ++i)

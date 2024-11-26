@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -202,4 +203,65 @@ void matrix_sigmoid(matrix mat)
             matrix_set(mat, i, j, new);
         }
     }
+}
+
+matrix matrix_read_csv(const char* filename, int labeled)
+{
+    matrix mat = { 0 };
+
+    // open file
+    FILE* file = fopen(filename, "r");
+    if ( file == 0 )
+    {
+        log_error("%s: Cannot open file %s!", __func__, filename);
+        return mat;
+    }
+
+    // Read the file character by character and count newlines
+    int lineCount = 0;
+    char c;
+    while ((c = fgetc(file)) != EOF)
+        if (c == '\n')
+            ++lineCount;
+
+    if ( labeled )
+        --lineCount;
+
+    int seekset = 0;
+    if ( labeled )
+        ++seekset;
+    fseek(file, seekset, SEEK_SET);
+
+    // read , count.
+    int commaCount = 0;
+    while ((c = fgetc(file)) != EOF)
+    {
+        if (c == ',')
+            commaCount++;
+
+        if (c == '\n')
+            break;
+    }
+
+    log_debug( "%s: filename: %s, line count: %d, comma count: %d", __func__, filename, lineCount, commaCount );
+
+    int rows = commaCount + 1;
+    int cols = lineCount;
+
+    fseek(file, seekset, SEEK_SET);
+
+    matrix_init(&mat, rows, cols);
+    for (int i = 0; i < cols; ++i)
+    {
+        for (int j = 0; j < rows; ++j)
+        {
+            // parse until ','
+            double val = 0;
+            fscanf(file, "%lf", &val);
+            matrix_set(mat, j, i, val);
+            fgetc(file);
+        }
+    }
+
+    return mat;
 }
