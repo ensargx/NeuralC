@@ -116,3 +116,4 @@ void matrix_sigmoid(matrix mat);
 */
 matrix matrix_read_csv(const char* filename, int labeled);
 
+void matrix_tanh_deriv(matrix mat);

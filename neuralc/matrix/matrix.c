@@ -271,3 +271,22 @@ double sigmoid_deriv(double x)
     return sigmoid(x) * (1 - sigmoid(x));
 }
 
+double tanh_deriv(double x)
+{
+    return (1 - tanh(x)*tanh(x));
+}
+
+void matrix_tanh_deriv(matrix mat)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(mat, i, j);
+            double deriv = tanh_deriv(val);
+            matrix_set(mat, i, j, deriv);
+        }
+    }
+}
+
+

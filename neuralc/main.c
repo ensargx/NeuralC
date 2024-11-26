@@ -2,9 +2,12 @@
 #include "util/logger.h"
 
 double sigmoid_deriv(double);
+void test2();
 
 int main()
 {
+    test2();
+    return 0;
     int n = 28;
 
     matrix w1 = matrix_create_random(32, n*n, -1, 1, 54);
