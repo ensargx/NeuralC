@@ -265,3 +265,9 @@ matrix matrix_read_csv(const char* filename, int labeled)
 
     return mat;
 }
+
+double sigmoid_deriv(double x)
+{
+    return sigmoid(x) * (1 - sigmoid(x));
+}
+

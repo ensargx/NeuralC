@@ -1,18 +1,11 @@
 #include "matrix/matrix.h"
 #include "util/logger.h"
-#include <math.h>
-#include <signal.h>
-#include <stdlib.h>
+
+double sigmoid_deriv(double);
 
 int main()
 {
     int n = 28;
-    /*
-    matrix w1;
-    matrix b1;
-    matrix_init(&w1, 32, n*n+1);
-    matrix_init(&b1, 1, n*n+2);
-    */
 
     matrix w1 = matrix_create_random(32, n*n, -1, 1, 54);
     matrix b1 = matrix_create_random(32, 1, -1, 1, 55);
@@ -28,10 +21,15 @@ int main()
     matrix x = matrix_read_csv("data/mnist_test_x.csv", 1);
     log_debug("x matrix: row count: %d, column count: %d", x.rows, x.cols);
 
+    // 0-1 trans
+    for (int i = 0; i < x.rows; ++i)
+        for (int j = 0; j < x.cols; ++j)
+            matrix_set(x, i, j, matrix_get(x, i, j) / 255);
+
     matrix y = matrix_read_csv("data/mnist_test_y.csv", 1);
     log_debug("y matrix: row count: %d, column count: %d", y.rows, y.cols);
 
-    //      (32xn*n) * ( n*n, A ) + ( 1, 32 )
+    //      (32xn*n) * ( n*n, A ) + (32, 1) -> (32, A)
     // z1 = W1 * x + b1 = ( 32, A )
     matrix z1 = { 0 };
     matrix_dot(&z1, w1, x);
@@ -48,11 +46,11 @@ int main()
     matrix a2 = z2;
     matrix_sigmoid(a2);
 
+    // a2: 10 * 10000
     log_debug("a2 rows: %d, cols: %d", a2.rows, a2.cols);
 
     // calculate loss
-    matrix loss;
-    matrix_init(&loss, 1, a2.rows);
+    double cost = 0;
     for (int i = 0; i < a2.rows; ++i)
     {
         double l = 0;
@@ -65,34 +63,39 @@ int main()
                 real_y = 1;
             l += (y_hat - real_y) * (y_hat - real_y);
         }
-        matrix_set(loss, 0, i, l / x.rows);
+        cost += l;
     }
+    cost /= a2.rows;
 
+    log_debug("cost: %lf", cost);
 
-    matrix dL_da2;
-    matrix_init(&dL_da2, a2.rows, a2.cols);
-    for (int i = 0; i < dL_da2.rows; ++i)
+    // dC/dw2 = dz2/dw2 * da/dz2 * dC/da2
+    // dC/db1 = dz2/db2 * da/dz2 * dC/da2 
+    
+    matrix dC_dw2;
+    matrix dC_db2;
+    matrix_init(&dC_dw2, a2.rows, 1);
+    matrix_init(&dC_db2, a2.rows, 1);
+    for (int i = 0; i < a2.rows; ++i)
     {
-        for(int j = 0; j < dL_da2.cols; ++j)
+        double l = 0;
+        double lb = 0;
+        for (int j = 0; j < a2.cols; ++j)
         {
-            double val_a2 = matrix_get(a2, i, j);
-            double val_y = 0;
-            if (matrix_get(y, 0, j) == i)
-                val_y = 1;
-            matrix_set(dL_da2, i, j, val_a2 - val_y);
+            double real_yencoded = matrix_get(y, 0, j);
+            double real_y = 0;
+            if ( real_yencoded == i )
+                real_y = 1;
+            double dz_dw = matrix_get(a2, i, j);
+            double da_dz = sigmoid_deriv(matrix_get(z2, i, j));
+            double dc_da = matrix_get(a2, i, j) - real_y;
+            l = 2 * dz_dw * da_dz * dc_da;
+            lb = 2 * da_dz * dc_da;
         }
+        matrix_set(dC_dw2, i, 0, l / a2.rows);
+        matrix_set(dC_db2, i, 0, lb / a2.rows);
     }
+    for (int i = 0; i < dC_dw2.rows; ++i)
+        log_debug("dCda2[%d][%d] = %lf", i, 0, matrix_get(dC_dw2, i, 0));
 
-    matrix da2_dz2;
-    matrix_init(&da2_dz2, a2.rows, a2.cols);
-    for (int i = 0; i < a2.rows; ++i) {
-        for (int j = 0; j < a2.cols; ++j) {
-            double sigmoid_val = matrix_get(a2, i, j);
-            matrix_set(da2_dz2, i, j, sigmoid_val * (1 - sigmoid_val));  // Sigmoid türevi
-        }
-    }
-
-    matrix dL_dz2;
-    matrix_init(&dL_dz2, a2.rows, a2.cols);
-    matrix_dot(&dL_dz2, dL_da2, da2_dz2);  // dL_dz2 = dL_da2 * da2_dz2
 }
