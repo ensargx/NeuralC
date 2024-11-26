@@ -83,6 +83,16 @@ int main()
         }
     }
 
+    matrix da2_dz2;
+    matrix_init(&da2_dz2, a2.rows, a2.cols);
+    for (int i = 0; i < a2.rows; ++i) {
+        for (int j = 0; j < a2.cols; ++j) {
+            double sigmoid_val = matrix_get(a2, i, j);
+            matrix_set(da2_dz2, i, j, sigmoid_val * (1 - sigmoid_val));  // Sigmoid türevi
+        }
+    }
 
-
+    matrix dL_dz2;
+    matrix_init(&dL_dz2, a2.rows, a2.cols);
+    matrix_dot(&dL_dz2, dL_da2, da2_dz2);  // dL_dz2 = dL_da2 * da2_dz2
 }
