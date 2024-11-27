@@ -167,13 +167,21 @@ void test3(void)
         matrix_dot(&dw2, da2, z1T);       // dW2 = da2 * z1^T
         
         matrix_sum_rows(&db2, da2);        // db2 = sum(da2)
+    
+        log_debug("da2.shape: (%d, %d)", da2.rows, da2.cols);
+       
 
         // Parametre güncellemesi
         matrix_scale(dw2, -lr);
         matrix_add(w2, dw2);
 
         matrix_scale(db2, -lr);
+        log_debug("AAA");
+        log_debug("db.shape: (%d, %d)", db2.rows, db2.cols);
+        log_debug("b2.shape: (%d, %d)", b2.rows, b2.cols);
+
         matrix_add(b2, db2);
+        log_debug("BBB");
 
         matrix_transpose(&w2T, w2);      // w2^T
         matrix_dot(&da1, w2T, da2);      // da1 = w2^T * da2 (gradient of a1)
