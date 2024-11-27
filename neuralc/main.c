@@ -2,11 +2,12 @@
 #include "util/logger.h"
 
 double sigmoid_deriv(double);
-void test2();
+void test2(void);
+void test3(void);
 
 int main()
 {
-    test2();
+    test3();
     return 0;
     int n = 28;
 

@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <bits/floatn-common.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -271,6 +272,19 @@ double sigmoid_deriv(double x)
     return sigmoid(x) * (1 - sigmoid(x));
 }
 
+void matrix_sigmoid_deriv(matrix mat)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(mat, i, j);
+            double deriv = sigmoid_deriv(val);
+            matrix_set(mat, i, j, deriv);
+        }
+    }
+}
+
 double tanh_deriv(double x)
 {
     return (1 - tanh(x)*tanh(x));
@@ -289,4 +303,92 @@ void matrix_tanh_deriv(matrix mat)
     }
 }
 
+void matrix_subtract(matrix* pOut, matrix a, matrix b)
+{
+    if ( a.rows != b.rows || a.cols != b.cols )
+    {
+        log_error("%s: matrix rows or cols did not match!", __func__);
+        return;
+    }
 
+    if ( pOut->data )
+        free( pOut->data );
+
+    matrix_init(pOut, a.rows, a.cols);
+
+    for (int i = 0; i < a.rows; ++i)
+    {
+        for (int j = 0; j < a.cols; ++j)
+        {
+            double val = matrix_get(a, i, j) - matrix_get(b, i, j);
+            matrix_set(*pOut, i, j, val);
+        }
+    }
+}
+
+void matrix_scale(matrix mat, double val)
+{
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            matrix_set(mat, i, j, val * matrix_get(mat, i, j));
+        }
+    }
+}
+
+void matrix_mul(matrix mat, matrix sec)
+{
+    if ( mat.rows != sec.rows || mat.cols != sec.cols )
+    {
+        log_error("%s: matrixes does not have same dims!", __func__);
+        return;
+    }
+
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            double val = matrix_get(sec, i, j) * matrix_get(mat, i, j);
+            matrix_set(mat, i, j, val);
+        }
+    }
+}
+
+void matrix_sum_rows(matrix* pOut, matrix m)
+{
+    if ( pOut->data )
+        free( pOut->data );
+
+    matrix_init(pOut, 1, m.cols);
+
+    for (int j = 0; j < m.cols; ++j)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < m.rows; ++i)
+        {
+            sum += matrix_get(m, i, j);  // sum the values in the j-th column
+        }
+        matrix_set(*pOut, 0, j, sum);  // store the sum in the result matrix
+    }
+
+    return;
+}
+
+void matrix_add(matrix a, matrix b)
+{
+    if ( a.rows != b.rows || a.cols != b.cols )
+    {
+        log_error("%s: dimentions did not mnatch!", __func__);
+        return;
+    }
+
+    for (int i = 0; i < a.rows; ++i)
+    {
+        for (int j = 0; j < a.cols; ++j)
+        {
+            double val = matrix_get(a, i, j) + matrix_get(b, i, j);
+            matrix_set(a, i, j, val);
+        }
+    }
+}
