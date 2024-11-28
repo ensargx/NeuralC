@@ -5,7 +5,8 @@
 matrix ai_model_predict(ai_model model, matrix data)
 {
     matrix dot_out = { 0 };
-    matrix vars = matrix_copy(data);
+    matrix vars = { 0 };
+    matrix_copy(&vars, data);
 
     for (int i = 0; i < model.num_layers - 1; ++i)
     {
@@ -54,7 +55,8 @@ void ai_model_train_gd(ai_model model, matrix data, matrix value)
 {
     matrix dot_out = { 0 };
     // matrix deriv = { 0 };
-    matrix vars = matrix_copy(data);
+    matrix vars = { 0 };
+    matrix_copy(&vars, data);
 
     for (int i = 0; i < model.num_layers - 1; ++i)
     {

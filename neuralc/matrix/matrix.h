@@ -25,7 +25,7 @@ void matrix_destroy(matrix *pMatrix);
 /** 
  * Creates a copy of the given matrix.
 */
-matrix matrix_copy(matrix matrix);
+void matrix_copy(matrix *pOut, matrix matrix);
 
 /**
  * Gets the given element of the matrix.
@@ -117,7 +117,7 @@ void matrix_sigmoid_deriv(matrix *pOut, matrix mat);
 */
 matrix matrix_read_csv(const char* filename, int labeled);
 
-void matrix_tanh_deriv(matrix mat);
+void matrix_tanh_deriv(matrix *pOut, matrix mat);
 
 /**
  * a - b
@@ -130,9 +130,9 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b);
 void matrix_scale(matrix mat, double val);
 
 /**
- * mat = mat * sec
+ * pOut = mat * sec
 */
-void matrix_mul(matrix mat, matrix sec);
+void matrix_mul(matrix *pOut, matrix mat, matrix sec);
 
 /*
  * sums over matrix m in rows.
@@ -144,5 +144,3 @@ void matrix_sum_rows(matrix* pOut, matrix m);
 */
 void matrix_add(matrix a, matrix b);
     
-
-

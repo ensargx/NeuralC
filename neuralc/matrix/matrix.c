@@ -32,15 +32,14 @@ void matrix_destroy(matrix *pMatrix)
     return;
 }
 
-matrix matrix_copy(matrix mat)
+void matrix_copy(matrix *pOut, matrix mat)
 {
-    matrix res;
+    if ( pOut->data )
+        free( pOut->data );
 
-    matrix_init(&res, mat.rows, mat.cols);
+    matrix_init(pOut, mat.rows, mat.cols);
 
-    memcpy(res.data, mat.data, mat.rows * mat.cols * sizeof(double));
-
-    return res;
+    memcpy(pOut->data, mat.data, mat.rows * mat.cols * sizeof(double));
 }  
 
 double matrix_get(matrix matrix, int x, int y)
@@ -295,15 +294,20 @@ double tanh_deriv(double x)
     return (1 - tanh(x)*tanh(x));
 }
 
-void matrix_tanh_deriv(matrix mat)
+void matrix_tanh_deriv(matrix *pOut, matrix mat)
 {
+    if ( pOut->data )
+        free( pOut->data );
+
+    matrix_init(pOut, mat.rows, mat.cols);
+
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
         {
             double val = matrix_get(mat, i, j);
             double deriv = tanh_deriv(val);
-            matrix_set(mat, i, j, deriv);
+            matrix_set(*pOut, i, j, deriv);
         }
     }
 }
@@ -342,7 +346,7 @@ void matrix_scale(matrix mat, double val)
     }
 }
 
-void matrix_mul(matrix mat, matrix sec)
+void matrix_mul(matrix *pOut, matrix mat, matrix sec)
 {
     if ( mat.rows != sec.rows || mat.cols != sec.cols )
     {
@@ -350,12 +354,17 @@ void matrix_mul(matrix mat, matrix sec)
         return;
     }
 
+    if ( pOut->data )
+        free( pOut->data );
+
+    matrix_init(pOut, mat.rows, mat.cols);
+
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
         {
             double val = matrix_get(sec, i, j) * matrix_get(mat, i, j);
-            matrix_set(mat, i, j, val);
+            matrix_set(*pOut, i, j, val);
         }
     }
 }
@@ -397,3 +406,4 @@ void matrix_add(matrix a, matrix b)
         }
     }
 }
+

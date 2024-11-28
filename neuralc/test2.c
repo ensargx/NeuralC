@@ -80,7 +80,7 @@ void test3(void)
 
 
     int itercnt = 10000;
-    double lr = 0.01;
+    double lr = 0.001;
 
     matrix w1 = matrix_create_random(32, 28*28, -1, 1, 54);
     matrix b1 = matrix_create_random(32, 1, -1, 1, 55);
@@ -117,39 +117,35 @@ void test3(void)
     matrix y_yhat = { 0 };
     matrix_init(&y_yhat, y.rows, y.cols);
 
-    matrix dLdy;
-    matrix_init(&dLdy, y.rows, 1);
-
     matrix z1 = { 0 };
     matrix z2 = { 0 };
-    matrix da1 = { 0 };
-    matrix da2 = { 0 };
+    matrix dL_da2 = { 0 };
+    matrix dL_da1 = { 0 };
+    matrix a1 = { 0 };
 
-    matrix db2 = { 0 };
-    matrix_init(&db2, b2.rows, b2.cols);
-    matrix db1 = { 0 };
-    matrix z1T = { 0 };
+    matrix a1T = { 0 };
+    matrix w1T = { 0 };
 
-    matrix w2T = { 0 };
-    matrix dw2 = { 0 };
-    matrix_init(&dw2, w2.rows, w2.cols);
-    matrix dw1 = { 0 };
+    matrix dL_dw1 = { 0 };
+    matrix dL_dw2 = { 0 };
+    matrix dL_db1;
+    matrix_init(&dL_db1, b1.rows, b1.cols);
+    matrix dL_db2;
+    matrix_init(&dL_db2, b2.rows, b2.cols);
 
     matrix sigmoid_deriv = { 0 };
+    matrix tanh_deriv = { 0 };
 
     for (int iter = 0; iter < itercnt; ++iter)
     {
         matrix_dot(&z1, w1, x);
         matrix_add_row(z1, b1);
-        matrix_tanh(z1);
+        matrix_copy(&a1, z1);
+        matrix_tanh(a1);
 
-        log_debug("shape a1 = (%d, %d)", z1.rows, z1.cols);
-
-        matrix_dot(&z2, w2, z1);
+        matrix_dot(&z2, w2, a1);
         matrix_add_row(z2, b2);
         matrix_sigmoid(z2);
-
-        log_debug("shape a2 = (%d, %d)", z2.rows, z2.cols);
 
         // calculate loss
         double loss = 0;
@@ -166,60 +162,66 @@ void test3(void)
         }
         log_debug("loss: %lf", loss);
 
-        // y - y^ 
+        // y - y^
         for (int i = 0; i < y.rows; ++i)
         {
-            double sum = 0;
             for (int j = 0; j < y.cols; ++j)
             {
-                sum += matrix_get(z2, i, j) - matrix_get(y, i, j);
+                double val = matrix_get(z2, i, j) - matrix_get(y, i, j);
+                matrix_set(y_yhat, i, j, val);
             }
-            matrix_set(dLdy, i, 0, sum / y.cols);
         }
 
-        log_debug("shape dLdy: (%d, %d)", dLdy.rows, dLdy.cols);
-
-        matrix_transpose(&z1T, z1);
+        matrix_transpose(&a1T, a1);
 
         // (y-y^)*(sigmoid'(z))
-        matrix_sigmoid_deriv(&sigmoid_deriv, z2);
-        matrix_mul(y_yhat, sigmoid_deriv);
-        matrix_dot(&dw2, y_yhat, z1T);
-        // y_yhat = da2,
-        // dw2 = dw2
+        matrix_sigmoid_deriv(&sigmoid_deriv, z2); // (10, N)
 
         // dLdy * dy/dw2 = dL/dw2
-        for (int i = 0; i < dLdy.rows; ++i)
+        // dL/dw2 = dL/dy * dy/dw2
+        //         (y-y^) * (sigmoid')
+        matrix_mul(&dL_da2, y_yhat, sigmoid_deriv); // (10, N)
+        matrix_dot(&dL_dw2, dL_da2, a1T); // (10, 32)
+        matrix_copy(&dL_db2, dL_da2);
+
+        // compute dL_db2
+        for (int i = 0; i < dL_da2.rows; ++i)
         {
-            for (int j = 0; j < dw2.cols; ++j)
+            double sum = 0;
+            for (int j = 0; j < dL_da2.cols; ++j)
             {
-                double val = matrix_get(dw2, i, j) * matrix_get(dLdy, i, 0);
-                matrix_set(dw2, i, j, val);
+                sum += matrix_get(dL_da2, i, j);
             }
+            sum /= dL_da2.cols;
+            matrix_set(dL_db2, i, 0, sum);
         }
-        // dL/db2 = dLdy * dy/db2
-        for (int i = 0; i < db2.rows; ++i)
+
+        // compute dL_dw1 and dL_db1
+        // da1/dw1 (tanh_deriv)
+        matrix_tanh_deriv(&tanh_deriv, a1); // (32, N)
+
+        matrix_mul(&dL_da1, z1, tanh_deriv); // (32, N)
+        matrix_transpose(&w1T, w1);
+        matrix_dot(&dL_dw1, w1T, dL_da1);
+
+        for (int i = 0; i < dL_da1.rows; ++i)
         {
-            for (int j = 0; j < db2.cols; ++j)
+            double sum = 0;
+            for (int j = 0; j < dL_da1.cols; ++j)
             {
-                double val = matrix_get(y_yhat, i, j) * matrix_get(dLdy, i, 0);
-                matrix_set(db2, i, j, val);
+                sum += matrix_get(dL_da1, i, j);
             }
+            sum /= dL_da1.cols;
+            matrix_set(dL_db1, i, 0, sum);
         }
 
-        log_debug("dw2.shape = (%d, %d)", dw2.rows, dw2.cols);
-        log_debug("db2.shape = (%d, %d)", db2.rows, db2.cols);
+        // update the parameters.
 
-        // dL/dw1 = 
-
-        // update w2
-        // fuck w1, later i update it.
-        // w2 -= lr * dw2
         for (int i = 0; i < w2.rows; ++i)
         {
             for(int j = 0; j < w2.cols; ++j)
             {
-                double new = -lr * matrix_get(dw2, i, j);
+                double new = -lr * matrix_get(dL_dw2, i, j);
                 matrix_set(w2, i, j, new);
             }
         }
@@ -228,8 +230,26 @@ void test3(void)
         {
             for (int j = 0; j < b2.cols; ++j)
             {
-                double new = -lr * matrix_get(db2, i, j);
+                double new = -lr * matrix_get(dL_db2, i, j);
                 matrix_set(b2, i, j, new);
+            }
+        }
+
+        for (int i = 0; i < w1.rows; ++i)
+        {
+            for (int j = 0; j < w1.cols; ++j)
+            {
+                double new = -lr * matrix_get(dL_dw1, i, j);
+                matrix_set(w1, i, j, new);
+            }
+        }
+
+        for (int i = 0; i < b1.rows; ++i)
+        {
+            for (int j = 0; j < b1.cols; ++j)
+            {
+                double new = -lr * matrix_get(dL_db1, i, j);
+                matrix_set(b1, i, j, new);
             }
         }
 
