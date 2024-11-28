@@ -126,11 +126,13 @@ void test3(void)
     matrix da2 = { 0 };
 
     matrix db2 = { 0 };
+    matrix_init(&db2, b2.rows, b2.cols);
     matrix db1 = { 0 };
     matrix z1T = { 0 };
 
     matrix w2T = { 0 };
     matrix dw2 = { 0 };
+    matrix_init(&dw2, w2.rows, w2.cols);
     matrix dw1 = { 0 };
 
     matrix sigmoid_deriv = { 0 };
@@ -177,12 +179,16 @@ void test3(void)
 
         log_debug("shape dLdy: (%d, %d)", dLdy.rows, dLdy.cols);
 
+        matrix_transpose(&z1T, z1);
+
         // (y-y^)*(sigmoid'(z))
         matrix_sigmoid_deriv(&sigmoid_deriv, z2);
         matrix_mul(y_yhat, sigmoid_deriv);
-        matrix_dot(&dw2, y_yhat, xT);
+        matrix_dot(&dw2, y_yhat, z1T);
+        // y_yhat = da2,
+        // dw2 = dw2
 
-        // dLdy * dy/dw2
+        // dLdy * dy/dw2 = dL/dw2
         for (int i = 0; i < dLdy.rows; ++i)
         {
             for (int j = 0; j < dw2.cols; ++j)
@@ -191,8 +197,20 @@ void test3(void)
                 matrix_set(dw2, i, j, val);
             }
         }
+        // dL/db2 = dLdy * dy/db2
+        for (int i = 0; i < db2.rows; ++i)
+        {
+            for (int j = 0; j < db2.cols; ++j)
+            {
+                double val = matrix_get(y_yhat, i, j) * matrix_get(dLdy, i, 0);
+                matrix_set(db2, i, j, val);
+            }
+        }
 
         log_debug("dw2.shape = (%d, %d)", dw2.rows, dw2.cols);
+        log_debug("db2.shape = (%d, %d)", db2.rows, db2.cols);
+
+        // dL/dw1 = 
 
         // update w2
         // fuck w1, later i update it.
@@ -203,6 +221,15 @@ void test3(void)
             {
                 double new = -lr * matrix_get(dw2, i, j);
                 matrix_set(w2, i, j, new);
+            }
+        }
+
+        for (int i = 0; i < b2.rows; ++i)
+        {
+            for (int j = 0; j < b2.cols; ++j)
+            {
+                double new = -lr * matrix_get(db2, i, j);
+                matrix_set(b2, i, j, new);
             }
         }
 
