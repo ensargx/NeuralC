@@ -81,7 +81,7 @@ void test3(void)
 
     int itercnt = 10000;
     double lr = 0.001;
-    int seed = 54;
+    int seed = 312;
 
     matrix w1 = matrix_create_random(32, 28*28, -1, 1, seed);
     matrix b1 = matrix_create_random(32, 1, -1, 1, seed+1);
@@ -93,8 +93,10 @@ void test3(void)
     for (int i = 0; i < x.rows; ++i)
         for (int j = 0; j < x.cols; ++j)
             matrix_set(x, i, j, matrix_get(x, i, j) / 255);
+    log_debug("x.shape = (%d, %d)", x.rows, x.cols);
 
     matrix y = matrix_read_csv("data/data_y.csv", 1);
+    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
     matrix xT = { 0 };
     matrix_transpose(&xT, x);
@@ -132,19 +134,11 @@ void test3(void)
         matrix_add_row(z2, b2);
         matrix_sigmoid(z2);
 
-        // 3 sample print
-        for (int i = 0; i < 3; ++i)
+        log_debug("prediction for %d", iter);
+        for (int i = 0; i < z2.rows; ++i)
         {
-            log_debug("real: ");
-            for (int j = 0; j < y.rows; ++j)
-            {
-                log_debug("y[%d][%d] = %lf", j, i, matrix_get(y, i, j));
-            }
-            log_debug("predicted: ");
-            for (int j = 0; j < z2.rows; ++j)
-            {
-                log_debug("t[%d][%d] = %lf", j, i, matrix_get(z2, i, j));
-            }
+            log_debug("a2[%d][%d] = %lf", i, iter, matrix_get(z2, i, iter));
+            log_debug("y[%d][%d] = %lf", i, iter, matrix_get(y, i, iter));
         }
 
         // calculate loss
