@@ -127,7 +127,7 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b);
 /**
  * mat * val
 */
-void matrix_scale(matrix mat, double val);
+void matrix_scale(matrix *pOut, matrix mat, double val);
 
 /**
  * pOut = mat * sec

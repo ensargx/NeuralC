@@ -80,7 +80,7 @@ void test3(void)
 
 
     int itercnt = 10000;
-    double lr = 0.001;
+    double lr = 0.0001;
     int seed = 312;
 
     matrix w1 = matrix_create_random(32, 28*28, -1, 1, seed);
@@ -102,22 +102,23 @@ void test3(void)
     matrix_transpose(&y, y_);
 
     log_debug("x.shape = (%d, %d)", x.rows, x.cols);
-    log_debug("y.shape = (%d, %d)", y_.rows, y_.cols);
+    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
     matrix xT = { 0 };
     matrix_transpose(&xT, x);
 
-    matrix y_yhat = { 0 };
-    matrix_init(&y_yhat, y.rows, y.cols);
 
     matrix z1 = { 0 };
     matrix z2 = { 0 };
+
     matrix dL_da2 = { 0 };
-    matrix dL_da1 = { 0 };
+    matrix_init(&dL_da2, y.rows, 1);
+
     matrix a1 = { 0 };
+    matrix a2 = { 0 };
 
     matrix a1T = { 0 };
-    matrix w1T = { 0 };
+    matrix w2T = { 0 };
 
     matrix dL_dw1 = { 0 };
     matrix dL_dw2 = { 0 };
@@ -126,6 +127,8 @@ void test3(void)
     matrix dL_db2;
     matrix_init(&dL_db2, b2.rows, b2.cols);
 
+    matrix da2_dw1 = { 0 };
+    matrix da2_dw2 = { 0 };
     matrix sigmoid_deriv = { 0 };
     matrix tanh_deriv = { 0 };
 
@@ -138,7 +141,8 @@ void test3(void)
 
         matrix_dot(&z2, w2, a1);
         matrix_add_row(z2, b2);
-        matrix_sigmoid(z2);
+        matrix_copy(&a2, z2);
+        matrix_sigmoid(a2);
 
         log_debug("prediction for %d", iter);
         for (int i = 0; i < z2.rows; ++i)
@@ -162,17 +166,22 @@ void test3(void)
         }
         log_debug("loss: %lf", loss);
 
+        double C = 0;
         // y - y^
         for (int i = 0; i < y.rows; ++i)
         {
+            double sum = 0;
             for (int j = 0; j < y.cols; ++j)
             {
-                double val = matrix_get(z2, i, j) - matrix_get(y, i, j);
-                matrix_set(y_yhat, i, j, val);
+                sum += -2 * (matrix_get(y, i, j) - matrix_get(z2, i, j));
+                C += -2 * (matrix_get(y, i, j) - matrix_get(z2, i, j));
             }
+            matrix_set(dL_da2, i, 0, sum);
         }
+        C /= y.rows * y.cols;
 
         matrix_transpose(&a1T, a1);
+        matrix_transpose(&w2T, w2);
 
         // (y-y^)*(sigmoid'(z))
         matrix_sigmoid_deriv(&sigmoid_deriv, z2); // (10, N)
@@ -180,40 +189,15 @@ void test3(void)
         // dLdy * dy/dw2 = dL/dw2
         // dL/dw2 = dL/dy * dy/dw2
         //         (y-y^) * (sigmoid')
-        matrix_mul(&dL_da2, y_yhat, sigmoid_deriv); // (10, N)
-        matrix_dot(&dL_dw2, dL_da2, a1T); // (10, 32)
-        matrix_copy(&dL_db2, dL_da2);
+        matrix_dot(&da2_dw2, sigmoid_deriv, a1T); // (10, 32)
+        matrix_scale(&dL_dw2, da2_dw2, C); // (10, 32)
+        matrix_scale(&dL_db2, sigmoid_deriv, C); // (10, N)
 
-        // compute dL_db2
-        for (int i = 0; i < dL_da2.rows; ++i)
-        {
-            double sum = 0;
-            for (int j = 0; j < dL_da2.cols; ++j)
-            {
-                sum += matrix_get(dL_da2, i, j);
-            }
-            sum /= dL_da2.cols;
-            matrix_set(dL_db2, i, 0, sum);
-        }
+        matrix_tanh_deriv(&tanh_deriv, z1); // 32 * N
+        matrix_dot(&da2_dw1, tanh_deriv, xT);
+        matrix_scale(&dL_dw1, da2_dw1, C);
 
-        // compute dL_dw1 and dL_db1
-        // da1/dw1 (tanh_deriv)
-        matrix_tanh_deriv(&tanh_deriv, a1); // (32, N)
-
-        matrix_mul(&dL_da1, z1, tanh_deriv); // (32, N)
-        matrix_transpose(&w1T, w1);
-        matrix_dot(&dL_dw1, w1T, dL_da1);
-
-        for (int i = 0; i < dL_da1.rows; ++i)
-        {
-            double sum = 0;
-            for (int j = 0; j < dL_da1.cols; ++j)
-            {
-                sum += matrix_get(dL_da1, i, j);
-            }
-            sum /= dL_da1.cols;
-            matrix_set(dL_db1, i, 0, sum);
-        }
+        matrix_scale(&dL_db1, tanh_deriv, C);
 
         // update the parameters.
 

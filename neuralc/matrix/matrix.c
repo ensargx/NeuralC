@@ -362,13 +362,18 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b)
     }
 }
 
-void matrix_scale(matrix mat, double val)
+void matrix_scale(matrix *pOut, matrix mat, double val)
 {
+    if ( pOut->data )
+        free( pOut->data );
+    
+    matrix_init(pOut, mat.rows, mat.cols);
+
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
         {
-            matrix_set(mat, i, j, val * matrix_get(mat, i, j));
+            matrix_set(*pOut, i, j, val * matrix_get(mat, i, j));
         }
     }
 }
