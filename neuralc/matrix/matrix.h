@@ -106,7 +106,7 @@ void matrix_tanh(matrix mat);
  * Apply sigmoid function for every element in matrix.
 */
 void matrix_sigmoid(matrix mat);
-void matrix_sigmoid_deriv(matrix mat);
+void matrix_sigmoid_deriv(matrix *pOut, matrix mat);
 
 /**
  * Read a csv file and translate it to matrix.

@@ -97,8 +97,8 @@ void test3(void)
     // y_ -> (1, N)
     // 0..9 -> [0...1]
     matrix y;
-    log_debug("y.shape = (%d, %d)", y_.rows, y_.cols);
     matrix_init(&y, 10, y_.cols);
+    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
     for (int i = 0; i < y.rows; ++i)
     {
@@ -114,6 +114,12 @@ void test3(void)
     matrix xT = { 0 };
     matrix_transpose(&xT, x);
 
+    matrix y_yhat = { 0 };
+    matrix_init(&y_yhat, y.rows, y.cols);
+
+    matrix dLdy;
+    matrix_init(&dLdy, y.rows, 1);
+
     matrix z1 = { 0 };
     matrix z2 = { 0 };
     matrix da1 = { 0 };
@@ -126,7 +132,8 @@ void test3(void)
     matrix w2T = { 0 };
     matrix dw2 = { 0 };
     matrix dw1 = { 0 };
-    matrix_init(&dw2, 10, 32);
+
+    matrix sigmoid_deriv = { 0 };
 
     for (int iter = 0; iter < itercnt; ++iter)
     {
@@ -157,52 +164,47 @@ void test3(void)
         }
         log_debug("loss: %lf", loss);
 
-        matrix_subtract(&da2, z2, y); 
-        matrix_scale(da2, 2.0);
+        // y - y^ 
+        for (int i = 0; i < y.rows; ++i)
+        {
+            double sum = 0;
+            for (int j = 0; j < y.cols; ++j)
+            {
+                sum += matrix_get(z2, i, j) - matrix_get(y, i, j);
+            }
+            matrix_set(dLdy, i, 0, sum / y.cols);
+        }
 
-        matrix_sigmoid_deriv(z2);
-        matrix_mul(da2, z2);
+        log_debug("shape dLdy: (%d, %d)", dLdy.rows, dLdy.cols);
 
-        matrix_transpose(&z1T, z1);
-        matrix_dot(&dw2, da2, z1T);       // dW2 = da2 * z1^T
-        
-        matrix_sum_rows(&db2, da2);        // db2 = sum(da2)
-    
-        log_debug("da2.shape: (%d, %d)", da2.rows, da2.cols);
-       
+        // (y-y^)*(sigmoid'(z))
+        matrix_sigmoid_deriv(&sigmoid_deriv, z2);
+        matrix_mul(y_yhat, sigmoid_deriv);
+        matrix_dot(&dw2, y_yhat, xT);
 
-        // Parametre güncellemesi
-        matrix_scale(dw2, -lr);
-        matrix_add(w2, dw2);
+        // dLdy * dy/dw2
+        for (int i = 0; i < dLdy.rows; ++i)
+        {
+            for (int j = 0; j < dw2.cols; ++j)
+            {
+                double val = matrix_get(dw2, i, j) * matrix_get(dLdy, i, 0);
+                matrix_set(dw2, i, j, val);
+            }
+        }
 
-        matrix_scale(db2, -lr);
-        log_debug("AAA");
-        log_debug("db.shape: (%d, %d)", db2.rows, db2.cols);
-        log_debug("b2.shape: (%d, %d)", b2.rows, b2.cols);
+        log_debug("dw2.shape = (%d, %d)", dw2.rows, dw2.cols);
 
-        matrix_add(b2, db2);
-        log_debug("BBB");
-
-        matrix_transpose(&w2T, w2);      // w2^T
-        matrix_dot(&da1, w2T, da2);      // da1 = w2^T * da2 (gradient of a1)
-
-        // Apply the derivative of tanh activation function
-        matrix_tanh_deriv(z1);           // Apply tanh derivative to z1
-        matrix_mul(da1, z1);             // da1 = da1 * tanh'(z1)
-
-        // Compute the gradient for dw1 (derivative of W1)
-        matrix_dot(&dw1, da1, xT);       // dw1 = da1 * x^T
-
-        // Compute the gradient for db1 (sum of rows of da1)
-        matrix_sum_rows(&db1, da1);      // db1 = sum(da1, axis=0)
-
-        // Update parameters for W1 and b1
-        matrix_scale(dw1, -lr);          // Scale by learning rate
-        matrix_add(w1, dw1);             // Update W1 = W1 - lr * dw1
-
-        matrix_scale(db1, -lr);          // Scale db1 by learning rate
-        matrix_add(b1, db1);             // Update b1 = b1 - lr * db1
-
+        // update w2
+        // fuck w1, later i update it.
+        // w2 -= lr * dw2
+        for (int i = 0; i < w2.rows; ++i)
+        {
+            for(int j = 0; j < w2.cols; ++j)
+            {
+                double new = -lr * matrix_get(dw2, i, j);
+                matrix_set(w2, i, j, new);
+            }
+        }
 
     }
 }

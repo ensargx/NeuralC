@@ -272,15 +272,20 @@ double sigmoid_deriv(double x)
     return sigmoid(x) * (1 - sigmoid(x));
 }
 
-void matrix_sigmoid_deriv(matrix mat)
+void matrix_sigmoid_deriv(matrix *pOut, matrix mat)
 {
+    if ( pOut->data )
+        free( pOut->data );
+
+    matrix_init(pOut, mat.rows, mat.cols);
+
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
         {
             double val = matrix_get(mat, i, j);
             double deriv = sigmoid_deriv(val);
-            matrix_set(mat, i, j, deriv);
+            matrix_set(*pOut, i, j, deriv);
         }
     }
 }
