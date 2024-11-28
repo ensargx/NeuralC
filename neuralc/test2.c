@@ -89,28 +89,12 @@ void test3(void)
     matrix w2 = matrix_create_random(10, 32, -1, 1, seed+2);
     matrix b2 = matrix_create_random(10, 1, -1, 1, seed+3);
 
-    matrix x = matrix_read_csv("data/mnist_test_x.csv", 1);
+    matrix x = matrix_read_csv("data/data_x.csv", 1);
     for (int i = 0; i < x.rows; ++i)
         for (int j = 0; j < x.cols; ++j)
             matrix_set(x, i, j, matrix_get(x, i, j) / 255);
 
-    matrix y_ = matrix_read_csv("data/mnist_test_y.csv", 1);
-    // y_ -> (1, N)
-    // 0..9 -> [0...1]
-    matrix y;
-    matrix_init(&y, 10, y_.cols);
-    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
-
-    for (int i = 0; i < y.rows; ++i)
-    {
-        for (int j = 0; j < y.cols; ++j)
-        {
-            matrix_set(y, i, j, 0);
-            double val = matrix_get(y_, 0, j);
-            int idx = (int)(val);
-            matrix_set(y, idx, j, 1);
-        }
-    }
+    matrix y = matrix_read_csv("data/data_y.csv", 1);
 
     matrix xT = { 0 };
     matrix_transpose(&xT, x);
@@ -147,6 +131,21 @@ void test3(void)
         matrix_dot(&z2, w2, a1);
         matrix_add_row(z2, b2);
         matrix_sigmoid(z2);
+
+        // 3 sample print
+        for (int i = 0; i < 3; ++i)
+        {
+            log_debug("real: ");
+            for (int j = 0; j < y.rows; ++j)
+            {
+                log_debug("y[%d][%d] = %lf", j, i, matrix_get(y, i, j));
+            }
+            log_debug("predicted: ");
+            for (int j = 0; j < z2.rows; ++j)
+            {
+                log_debug("t[%d][%d] = %lf", j, i, matrix_get(z2, i, j));
+            }
+        }
 
         // calculate loss
         double loss = 0;

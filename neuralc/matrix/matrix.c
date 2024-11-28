@@ -251,6 +251,33 @@ matrix matrix_read_csv(const char* filename, int labeled)
     fseek(file, seekset, SEEK_SET);
 
     matrix_init(&mat, rows, cols);
+
+    // Reading data line by line
+    char line[1024];
+    if (labeled)
+        fgets(line, sizeof(line), file);
+    int row = 0;
+    while (fgets(line, sizeof(line), file) && row < rows)
+    {
+        char *token = strtok(line, ",");  // Tokenize the line by commas
+        int col = 0;
+
+        // Parse values separated by commas
+        while (token != NULL && col < cols)
+        {
+            double val = atof(token);  // Convert token to a double
+            matrix_set(mat, row, col, val);
+            token = strtok(NULL, ",");  // Move to the next token
+            col++;
+        }
+        row++;
+    }
+
+    fclose(file);
+
+    return mat;
+
+
     for (int i = 0; i < cols; ++i)
     {
         for (int j = 0; j < rows; ++j)
