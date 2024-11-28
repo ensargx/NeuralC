@@ -217,7 +217,6 @@ matrix matrix_read_csv(const char* filename, int labeled)
         return mat;
     }
 
-    // Read the file character by character and count newlines
     int lineCount = 0;
     char c;
     while ((c = fgetc(file)) != EOF)
@@ -245,8 +244,8 @@ matrix matrix_read_csv(const char* filename, int labeled)
 
     log_debug( "%s: filename: %s, line count: %d, comma count: %d", __func__, filename, lineCount, commaCount );
 
-    int rows = commaCount + 1;
-    int cols = lineCount;
+    int rows = lineCount;
+    int cols = commaCount + 1;
 
     fseek(file, seekset, SEEK_SET);
 
@@ -254,20 +253,21 @@ matrix matrix_read_csv(const char* filename, int labeled)
 
     // Reading data line by line
     char line[1024];
+
     if (labeled)
         fgets(line, sizeof(line), file);
+
     int row = 0;
     while (fgets(line, sizeof(line), file) && row < rows)
     {
-        char *token = strtok(line, ",");  // Tokenize the line by commas
+        char *token = strtok(line, ",");
         int col = 0;
 
-        // Parse values separated by commas
         while (token != NULL && col < cols)
         {
-            double val = atof(token);  // Convert token to a double
+            double val = atof(token);
             matrix_set(mat, row, col, val);
-            token = strtok(NULL, ",");  // Move to the next token
+            token = strtok(NULL, ",");
             col++;
         }
         row++;

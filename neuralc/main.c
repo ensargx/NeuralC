@@ -5,7 +5,7 @@ double sigmoid_deriv(double);
 void test2(void);
 void test3(void);
 
-int main()
+int main(void)
 {
     test3();
     return 0;

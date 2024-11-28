@@ -89,14 +89,20 @@ void test3(void)
     matrix w2 = matrix_create_random(10, 32, -1, 1, seed+2);
     matrix b2 = matrix_create_random(10, 1, -1, 1, seed+3);
 
-    matrix x = matrix_read_csv("data/data_x.csv", 1);
-    for (int i = 0; i < x.rows; ++i)
-        for (int j = 0; j < x.cols; ++j)
-            matrix_set(x, i, j, matrix_get(x, i, j) / 255);
-    log_debug("x.shape = (%d, %d)", x.rows, x.cols);
+    matrix x_ = matrix_read_csv("data/data_x.csv", 1);
+    for (int i = 0; i < x_.rows; ++i)
+        for (int j = 0; j < x_.cols; ++j)
+            matrix_set(x_, i, j, matrix_get(x_, i, j) / 255);
 
-    matrix y = matrix_read_csv("data/data_y.csv", 1);
-    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
+    matrix y_ = matrix_read_csv("data/data_y.csv", 1);
+
+    matrix x = { 0 };
+    matrix y = { 0 };
+    matrix_transpose(&x, x_);
+    matrix_transpose(&y, y_);
+
+    log_debug("x.shape = (%d, %d)", x.rows, x.cols);
+    log_debug("y.shape = (%d, %d)", y_.rows, y_.cols);
 
     matrix xT = { 0 };
     matrix_transpose(&xT, x);
