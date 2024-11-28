@@ -81,12 +81,13 @@ void test3(void)
 
     int itercnt = 10000;
     double lr = 0.001;
+    int seed = 54;
 
-    matrix w1 = matrix_create_random(32, 28*28, -1, 1, 54);
-    matrix b1 = matrix_create_random(32, 1, -1, 1, 55);
+    matrix w1 = matrix_create_random(32, 28*28, -1, 1, seed);
+    matrix b1 = matrix_create_random(32, 1, -1, 1, seed+1);
     
-    matrix w2 = matrix_create_random(10, 32, -1, 1, 56);
-    matrix b2 = matrix_create_random(10, 1, -1, 1, 57);
+    matrix w2 = matrix_create_random(10, 32, -1, 1, seed+2);
+    matrix b2 = matrix_create_random(10, 1, -1, 1, seed+3);
 
     matrix x = matrix_read_csv("data/mnist_test_x.csv", 1);
     for (int i = 0; i < x.rows; ++i)
