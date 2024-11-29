@@ -2,15 +2,17 @@
 #include "matrix/matrix.h"
 #include "util/logger.h"
 #include <math.h>
+#include <stdio.h>
 
-void gd(matrix x, matrix y, matrix w, matrix b);
-void sgd(matrix x, matrix y, matrix w, matrix b);
-void adam(matrix x, matrix y, matrix w, matrix b);
+void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name);
+void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name);
+void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name);
+void params_to_csv(FILE* file, matrix w, matrix b, int iter, double cost);
 
 int main(void)
 {
-    const char* xpath = "data/train_data_x.csv";
-    const char* ypath = "data/train_data_y.csv";
+    const char* xpath = "data/test_data_x.csv";
+    const char* ypath = "data/test_data_y.csv";
     matrix x_ = matrix_read_csv(xpath, 1);
     matrix x = { 0 }; // (728, N)
     matrix_transpose(&x, x_);
@@ -24,13 +26,52 @@ int main(void)
     log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
     int n = 28;
+
     matrix w = matrix_create_random(1, n*n, -1, 1, 54);
     matrix b = matrix_create_random(1, 1, -1, 1, 1);
+    gd(x, y, w, b, "54");
+    sgd(x, y, w, b, "54");
+    adam(x, y, w, b, "54");
 
-    sgd(x, y, w, b);
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    w = matrix_create_random(1, n*n, -1, 1, 65);
+    b = matrix_create_random(1, 1, -1, 1, 1);
+    gd(x, y, w, b, "65");
+    sgd(x, y, w, b, "65");
+    adam(x, y, w, b, "65");
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    w = matrix_create_random(1, n*n, -1, 1, 98);
+    b = matrix_create_random(1, 1, -1, 1, 1);
+    gd(x, y, w, b, "98");
+    sgd(x, y, w, b, "98");
+    adam(x, y, w, b, "98");
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    w = matrix_create_random(1, n*n, -1, 1, 120);
+    b = matrix_create_random(1, 1, -1, 1, 1);
+    gd(x, y, w, b, "120");
+    sgd(x, y, w, b, "120");
+    adam(x, y, w, b, "120");
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    w = matrix_create_random(1, n*n, -1, 1, 10);
+    b = matrix_create_random(1, 1, -1, 1, 1);
+    gd(x, y, w, b, "10");
+    sgd(x, y, w, b, "10");
+    adam(x, y, w, b, "10");
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    matrix_destroy(&x);
+    matrix_destroy(&y);
 }
 
-void sgd(matrix x, matrix y, matrix w, matrix b)
+void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
 {
     int itercnt = 1000;
     double lr = 0.01;
@@ -43,6 +84,10 @@ void sgd(matrix x, matrix y, matrix w, matrix b)
 
     matrix dw = { 0 };
     matrix_init(&dw, w.rows, w.cols);
+
+    char outdir[64] = { 0 };
+    sprintf(outdir, "out/sgd_%s.csv", param_name);
+    FILE *out_params = fopen(outdir, "w");
 
     for (int iter = 0; iter < itercnt; ++iter)
     {
@@ -66,6 +111,8 @@ void sgd(matrix x, matrix y, matrix w, matrix b)
 
         matrix_scale(&da, dz, d_cost);
 
+        params_to_csv(out_params, w, b, iter, cost);
+
         int dataidx = iter % x.rows;
 
         for (int i = 0; i < w.rows; ++i)
@@ -78,12 +125,14 @@ void sgd(matrix x, matrix y, matrix w, matrix b)
             b.data[i][0] -= lr * da.data[i][dataidx];
         }
 
-        log_debug("COST: %lf", cost);
+        log_debug("COST SGD: %lf", cost);
 
     }
+
+    fclose(out_params);
 }
 
-void gd(matrix x, matrix y, matrix w, matrix b)
+void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
 {
     int itercnt = 1000;
     double lr = 0.01;
@@ -98,6 +147,10 @@ void gd(matrix x, matrix y, matrix w, matrix b)
     matrix_init(&dw, w.rows, w.cols);
     matrix db = { 0 };
     matrix_init(&db, b.rows, b.cols);
+
+    char outdir[64] = { 0 };
+    sprintf(outdir, "out/gd_%s.csv", param_name);
+    FILE *out_params = fopen(outdir, "w");
 
     for (int iter = 0; iter < itercnt; ++iter)
     {
@@ -124,6 +177,8 @@ void gd(matrix x, matrix y, matrix w, matrix b)
 
         matrix_scale(&da, dz, d_cost);
 
+        params_to_csv(out_params, w, b, iter, cost);
+
         for (int k = 0; k < a.cols; ++k)
         {
             for (int i = 0; i < w.rows; ++i)
@@ -148,12 +203,14 @@ void gd(matrix x, matrix y, matrix w, matrix b)
             b.data[i][0] -= lr * db.data[i][0];
         }
 
-        log_debug("COST: %lf", cost);
+        log_debug("COST GD: %lf", cost);
 
     }
+
+    fclose(out_params);
 }
 
-void adam(matrix x, matrix y, matrix w, matrix b)
+void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name)
 {
     int itercnt = 1000;
 
@@ -186,6 +243,10 @@ void adam(matrix x, matrix y, matrix w, matrix b)
     double epsilon = 0.00000001;
     double alpha = 0.001;
 
+    char outdir[64] = { 0 };
+    sprintf(outdir, "out/adam_%s.csv", param_name);
+    FILE *out_params = fopen(outdir, "w");
+
     for (int iter = 0; iter < itercnt; ++iter)
     {
         matrix_dot(&z, w, x);
@@ -207,6 +268,8 @@ void adam(matrix x, matrix y, matrix w, matrix b)
         matrix_tanh_deriv(&dz, z);
 
         matrix_scale(&da, dz, d_cost);
+
+        params_to_csv(out_params, w, b, iter, cost);
 
         int dataidx = iter % x.rows;
 
@@ -241,6 +304,16 @@ void adam(matrix x, matrix y, matrix w, matrix b)
             b.data[i][0] -= alpha * mt.data[i][w.cols] / (pow(vt.data[i][w.cols], 0.5) + epsilon);
         }
 
-        log_debug("cost: %lf", cost);
+        log_debug("COST ADAM: %lf", cost);
     }
+
+    fclose(out_params);
+}
+
+void params_to_csv(FILE *file, matrix w, matrix b, int iter, double cost)
+{
+    fprintf(file, "%d,%lf,", iter, cost);
+    for (int i = 0; i < w.cols; ++i)
+        fprintf(file, "%.3lf,", w.data[0][i]);
+    fprintf(file, "%.3lf\n", b.data[0][0]);
 }
