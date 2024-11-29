@@ -3,37 +3,35 @@
 #include "util/logger.h"
 #include <math.h>
 
-void gd(void);
-void sgd(void);
-void adam(void);
+void gd(matrix x, matrix y, matrix w, matrix b);
+void sgd(matrix x, matrix y, matrix w, matrix b);
+void adam(matrix x, matrix y, matrix w, matrix b);
 
 int main(void)
 {
-    adam();
-}
-
-void sgd(void)
-{
-    int n = 28;
-    matrix x_ = matrix_read_csv("data/data_x.csv", 1);
+    const char* xpath = "data/train_data_x.csv";
+    const char* ypath = "data/train_data_y.csv";
+    matrix x_ = matrix_read_csv(xpath, 1);
     matrix x = { 0 }; // (728, N)
     matrix_transpose(&x, x_);
-    for (int i = 0; i < x.rows; ++i)
-    {
-        for (int j = 0; j < x.cols; ++j)
-        {
-            x.data[i][j] = x.data[i][j] / 255;
-        }
-    }
+    matrix_destroy(&x_);
     log_debug("x.shape = (%d, %d)", x.rows, x.cols);
 
-    matrix y_ = matrix_read_csv("data/data_y.csv", 1);
+    matrix y_ = matrix_read_csv(ypath, 1);
     matrix y = { 0 };
     matrix_transpose(&y, y_);
+    matrix_destroy(&y_);
+    log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
+    int n = 28;
     matrix w = matrix_create_random(1, n*n, -1, 1, 54);
     matrix b = matrix_create_random(1, 1, -1, 1, 1);
 
+    sgd(x, y, w, b);
+}
+
+void sgd(matrix x, matrix y, matrix w, matrix b)
+{
     int itercnt = 1000;
     double lr = 0.01;
 
@@ -57,8 +55,8 @@ void sgd(void)
         for (int i = 0; i < a.cols; ++i)
         {
             double y_hat = a.data[0][i];
-            double expected = y_.data[i][0];
-            d_cost += (y_hat - expected);
+            double expected = y.data[0][i];
+            d_cost += (expected - y_hat);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
@@ -74,10 +72,10 @@ void sgd(void)
         {
             for (int j = 0; j < w.cols; ++j)
             {
-                double sum = x.data[j][dataidx] * da.data[0][dataidx];
+                double sum = x.data[j][dataidx] * da.data[i][dataidx];
                 w.data[i][j] -= lr * sum;
             }
-            b.data[i][0] -= lr * da.data[0][dataidx];
+            b.data[i][0] -= lr * da.data[i][dataidx];
         }
 
         log_debug("COST: %lf", cost);
@@ -85,28 +83,8 @@ void sgd(void)
     }
 }
 
-void gd(void)
+void gd(matrix x, matrix y, matrix w, matrix b)
 {
-    int n = 28;
-    matrix x_ = matrix_read_csv("data/data_x.csv", 1);
-    matrix x = { 0 }; // (728, N)
-    matrix_transpose(&x, x_);
-    for (int i = 0; i < x.rows; ++i)
-    {
-        for (int j = 0; j < x.cols; ++j)
-        {
-            x.data[i][j] = x.data[i][j] / 255;
-        }
-    }
-    log_debug("x.shape = (%d, %d)", x.rows, x.cols);
-
-    matrix y_ = matrix_read_csv("data/data_y.csv", 1);
-    matrix y = { 0 };
-    matrix_transpose(&y, y_);
-
-    matrix w = matrix_create_random(1, n*n, -1, 1, 54);
-    matrix b = matrix_create_random(1, 1, -1, 1, 1);
-
     int itercnt = 1000;
     double lr = 0.01;
 
@@ -132,8 +110,8 @@ void gd(void)
         for (int i = 0; i < a.cols; ++i)
         {
             double y_hat = a.data[0][i];
-            double expected = y_.data[i][0];
-            d_cost += (y_hat - expected);
+            double expected = y.data[0][i];
+            d_cost += (expected - y_hat);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
@@ -175,28 +153,8 @@ void gd(void)
     }
 }
 
-void adam(void)
+void adam(matrix x, matrix y, matrix w, matrix b)
 {
-    int n = 28;
-    matrix x_ = matrix_read_csv("data/data_x.csv", 1);
-    matrix x = { 0 }; // (728, N)
-    matrix_transpose(&x, x_);
-    for (int i = 0; i < x.rows; ++i)
-    {
-        for (int j = 0; j < x.cols; ++j)
-        {
-            x.data[i][j] = x.data[i][j] / 255;
-        }
-    }
-    log_debug("x.shape = (%d, %d)", x.rows, x.cols);
-
-    matrix y_ = matrix_read_csv("data/data_y.csv", 1);
-    matrix y = { 0 };
-    matrix_transpose(&y, y_);
-
-    matrix w = matrix_create_random(1, n*n, -1, 1, 54);
-    matrix b = matrix_create_random(1, 1, -1, 1, 1);
-
     int itercnt = 1000;
 
     matrix z = { 0 };
@@ -239,8 +197,8 @@ void adam(void)
         for (int i = 0; i < a.cols; ++i)
         {
             double y_hat = a.data[0][i];
-            double expected = y_.data[i][0];
-            d_cost += (y_hat - expected);
+            double expected = y.data[0][i];
+            d_cost += (expected - y_hat);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
