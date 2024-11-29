@@ -144,3 +144,4 @@ void matrix_sum_rows(matrix* pOut, matrix m);
 */
 void matrix_add(matrix a, matrix b);
     
+void matrix_zero(matrix mat);

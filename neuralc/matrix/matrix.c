@@ -450,3 +450,13 @@ void matrix_add(matrix a, matrix b)
     }
 }
 
+void matrix_zero(matrix mat)
+{
+    for(int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            matrix_set(mat, i, j, 0);
+        }
+    }
+}
