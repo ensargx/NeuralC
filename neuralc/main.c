@@ -59,10 +59,15 @@ int main(void)
         matrix_scale(&da, dz, d_cost);
 
         int dataidx = iter % x.rows;
-        for (int i = 0; i < w.cols; ++i)
+
+        for (int i = 0; i < w.rows; ++i)
         {
-            double sum = x.data[i][dataidx] * da.data[0][dataidx];
-            w.data[0][i] -= lr * sum;
+            for (int j = 0; j < w.cols; ++j)
+            {
+                double sum = x.data[j][dataidx] * da.data[0][dataidx];
+                w.data[i][j] -= lr * sum;
+            }
+            b.data[i][0] -= lr * da.data[0][dataidx];
         }
 
         log_debug("COST: %lf", cost);
