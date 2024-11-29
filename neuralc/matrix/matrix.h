@@ -4,7 +4,7 @@ typedef struct
 {
     int rows;
     int cols;
-    double *data;
+    double **data;
 } matrix;
 
 /**
@@ -100,7 +100,7 @@ matrix matrix_transpose(matrix *pOut, matrix mat);
 /**
  * Apply tanh function for every element in a matrix.
 */
-void matrix_tanh(matrix mat);
+void matrix_tanh(matrix* pOut, matrix mat);
 
 /**
  * Apply sigmoid function for every element in matrix.

@@ -1,5 +1,4 @@
 #include "matrix.h"
-#include <bits/floatn-common.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,7 +17,12 @@ void matrix_init(matrix *pMatrix, int rows, int cols)
     pMatrix->cols = cols;
     pMatrix->rows = rows;
 
-    double *data = (double*) malloc(sizeof(double) * rows * cols);
+    double **data = (double**) malloc(sizeof(double*) * rows);
+    for(int i = 0; i < rows; ++i)
+    {
+        data[i] = malloc(cols * sizeof(double));
+    }
+
     pMatrix->data = data;
 
     return;
@@ -26,8 +30,10 @@ void matrix_init(matrix *pMatrix, int rows, int cols)
 
 void matrix_destroy(matrix *pMatrix)
 {
-    if ( pMatrix->data )
-        free( pMatrix->data );
+    for (int i = 0; i < pMatrix->rows; ++i)
+        free( pMatrix->data[i] );
+
+    free( pMatrix->data );
 
     return;
 }
@@ -35,7 +41,7 @@ void matrix_destroy(matrix *pMatrix)
 void matrix_copy(matrix *pOut, matrix mat)
 {
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy(pOut);
 
     matrix_init(pOut, mat.rows, mat.cols);
 
@@ -51,7 +57,7 @@ double matrix_get(matrix matrix, int x, int y)
         return 0;
     }
 
-    return matrix.data[ x * matrix.cols + y ];
+    return matrix.data[x][y];
 }
 
 void matrix_set(matrix matrix, int x, int y, double value)
@@ -63,7 +69,7 @@ void matrix_set(matrix matrix, int x, int y, double value)
         return;
     }
 
-    matrix.data[ x * matrix.cols + y ] = value;
+    matrix.data[x][y] = value;
 
     return;
 }
@@ -79,7 +85,7 @@ int matrix_dot(matrix* pOut, matrix x, matrix y)
 
     // destroy pOut if not null
     if ( pOut->data != 0 )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, x.rows, y.cols);
 
@@ -126,7 +132,7 @@ void matrix_swap(matrix *pMat1, matrix *pMat2)
 {
     int rows1 = pMat1->rows;
     int cols1 = pMat1->cols;
-    double *data1 = pMat1->data;
+    double **data1 = pMat1->data;
 
     pMat1->rows = pMat2->rows;
     pMat1->cols = pMat2->cols;
@@ -163,7 +169,7 @@ void matrix_add_row(matrix mat1, matrix mat2)
 matrix matrix_transpose(matrix *pOut, matrix mat)
 {
     if ( pOut->data != 0 )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init( pOut, mat.cols, mat.rows );
 
@@ -174,15 +180,20 @@ matrix matrix_transpose(matrix *pOut, matrix mat)
     return *pOut;
 }
 
-void matrix_tanh(matrix mat)
+void matrix_tanh(matrix* pOut, matrix mat)
 {
+    if ( pOut->data )
+        matrix_destroy( pOut );
+
+    matrix_init(pOut, mat.rows, mat.cols);
+
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
         {
             double val = matrix_get(mat, i, j);
             double new = tanh(val);
-            matrix_set(mat, i, j, new);
+            matrix_set(*pOut, i, j, new);
         }
     }
 }
@@ -301,7 +312,7 @@ double sigmoid_deriv(double x)
 void matrix_sigmoid_deriv(matrix *pOut, matrix mat)
 {
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, mat.rows, mat.cols);
 
@@ -324,7 +335,7 @@ double tanh_deriv(double x)
 void matrix_tanh_deriv(matrix *pOut, matrix mat)
 {
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, mat.rows, mat.cols);
 
@@ -348,7 +359,7 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b)
     }
 
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, a.rows, a.cols);
 
@@ -365,7 +376,7 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b)
 void matrix_scale(matrix *pOut, matrix mat, double val)
 {
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
     
     matrix_init(pOut, mat.rows, mat.cols);
 
@@ -387,7 +398,7 @@ void matrix_mul(matrix *pOut, matrix mat, matrix sec)
     }
 
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, mat.rows, mat.cols);
 
@@ -404,7 +415,7 @@ void matrix_mul(matrix *pOut, matrix mat, matrix sec)
 void matrix_sum_rows(matrix* pOut, matrix m)
 {
     if ( pOut->data )
-        free( pOut->data );
+        matrix_destroy( pOut );
 
     matrix_init(pOut, 1, m.cols);
 
