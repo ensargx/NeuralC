@@ -16,26 +16,26 @@ const int EPOCHS = 1000;
 
 int main(void)
 {
-    const char* xpath = "data/train_data_x.csv";
-    const char* ypath = "data/train_data_y.csv";
+    const char* xpath = "data/mnist_train_x.csv";
+    const char* ypath = "data/mnist_train_y.csv";
     
-    const char* xtestpath = "data/test_data_x.csv";
-    const char* ytestpath = "data/test_data_y.csv";
+    const char* xtestpath = "data/mnist_test_x.csv";
+    const char* ytestpath = "data/mnist_test_y.csv";
 
-    matrix x_ = matrix_read_csv(xpath, 1);
+    matrix x_ = matrix_read_csv(xpath, 0);
     matrix x = { 0 }; // (728, N)
     matrix_transpose(&x, x_);
     matrix_destroy(&x_);
     log_debug("x.shape = (%d, %d)", x.rows, x.cols);
 
-    matrix y_ = matrix_read_csv(ypath, 1);
+    matrix y_ = matrix_read_csv(ypath, 0);
     matrix y = { 0 };
     matrix_transpose(&y, y_);
     matrix_destroy(&y_);
     log_debug("y.shape = (%d, %d)", y.rows, y.cols);
 
-    matrix x_test_ = matrix_read_csv(xtestpath, 1);
-    matrix y_test_ = matrix_read_csv(ytestpath, 1);
+    matrix x_test_ = matrix_read_csv(xtestpath, 0);
+    matrix y_test_ = matrix_read_csv(ytestpath, 0);
     matrix x_test = { 0 };
     matrix y_test = { 0 };
     matrix_transpose(&x_test, x_test_);
@@ -282,7 +282,7 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
     double beta1 = 0.9;
     double beta2 = 0.999;
     double epsilon = 0.00000001;
-    double alpha = 0.001;
+    double alpha = 0.01;
 
     char outdir[64] = { 0 };
     sprintf(outdir, "out/adam_%s.csv", param_name);
@@ -295,15 +295,17 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
 
         int dataidx = iter % x.rows;
 
-        double d_cost = y.data[0][dataidx] - a.data[0][dataidx];
+        double d_cost = 0;
         double cost = 0;
         for (int i = 0; i < a.cols; ++i)
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
             double diff = expected - y_hat;
+            d_cost += 2*diff;
             cost += pow(diff, 2);
         }
+        d_cost /= a.cols;
         cost /= a.cols;
 
         matrix_tanh_deriv(&dz, z);
@@ -342,7 +344,7 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
         }
 
         if ( iter % 100 == 0 )
-            log_debug("ITER: %d, COST ADAM: %lf, CORRECT: %lf", iter, cost, correct);
+            log_debug("ADAM = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
     }
 
     fclose(out_params);

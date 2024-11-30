@@ -102,11 +102,7 @@ int matrix_dot(matrix* pOut, matrix x, matrix y)
         return 0;
     }
 
-    // destroy pOut if not null
-    if ( pOut->data != 0 )
-        matrix_destroy( pOut );
-
-    matrix_init(pOut, x.rows, y.cols);
+    matrix_ensure( pOut, x.rows, y.cols );
 
     for (int i = 0; i < pOut->rows; ++i)
     {
@@ -312,7 +308,7 @@ matrix matrix_read_csv(const char* filename, int labeled)
         {
             // parse until ','
             double val = 0;
-            fscanf(file, "%lf", &val);
+            (void)fscanf(file, "%lf", &val);
             matrix_set(mat, j, i, val);
             fgetc(file);
         }
