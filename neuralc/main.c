@@ -3,11 +3,12 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 
-void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name);
 void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name);
+void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name);
 void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name);
-void params_to_csv(FILE* file, matrix w, matrix b, int iter, double cost);
+void params_to_csv(FILE* file, matrix w, matrix b, int iter, double cost, double elapsed);
 
 int main(void)
 {
@@ -76,6 +77,10 @@ void sgd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
     int itercnt = 1000;
     double lr = 0.01;
 
+    clock_t start, end;
+    double elapsed;
+    start = clock();
+
     matrix w = { 0 };
     matrix_copy(&w, w_);
     matrix b = { 0 };
@@ -113,7 +118,10 @@ void sgd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 
         matrix_scale(&da, dz, d_cost);
 
-        params_to_csv(out_params, w, b, iter, cost);
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+
+        params_to_csv(out_params, w, b, iter, cost, elapsed);
 
         int dataidx = iter % x.rows;
 
@@ -145,6 +153,10 @@ void gd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 {
     int itercnt = 1000;
     double lr = 0.01;
+
+    clock_t start, end;
+    double elapsed;
+    start = clock();
 
     matrix w = { 0 };
     matrix_copy(&w, w_);
@@ -191,7 +203,10 @@ void gd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 
         matrix_scale(&da, dz, d_cost);
 
-        params_to_csv(out_params, w, b, iter, cost);
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+
+        params_to_csv(out_params, w, b, iter, cost, elapsed);
 
         for (int k = 0; k < a.cols; ++k)
         {
@@ -217,7 +232,7 @@ void gd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
             b.data[i][0] -= lr * db.data[i][0];
         }
 
-        log_debug("COST GD: %lf", cost);
+        log_debug("ITER: %d, COST GD: %lf", iter, cost);
 
     }
 
@@ -230,12 +245,16 @@ void gd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
     matrix_destroy(&dz);
     matrix_destroy(&da);
     matrix_destroy(&dw);
-    matrix_destroy(&dw);
+    matrix_destroy(&db);
 }
 
 void adam(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 {
     int itercnt = 1000;
+
+    clock_t start, end;
+    double elapsed;
+    start = clock();
 
     matrix w = { 0 };
     matrix_copy(&w, w_);
@@ -297,7 +316,10 @@ void adam(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 
         matrix_scale(&da, dz, d_cost);
 
-        params_to_csv(out_params, w, b, iter, cost);
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+
+        params_to_csv(out_params, w, b, iter, cost, elapsed);
 
         int dataidx = iter % x.rows;
 
@@ -349,9 +371,9 @@ void adam(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
     matrix_destroy(&vt);
 }
 
-void params_to_csv(FILE *file, matrix w, matrix b, int iter, double cost)
+void params_to_csv(FILE *file, matrix w, matrix b, int iter, double cost, double elapsed)
 {
-    fprintf(file, "%d,%lf,", iter, cost);
+    fprintf(file, "%d,%lf,%lf,", iter, cost, elapsed);
     for (int i = 0; i < w.cols; ++i)
         fprintf(file, "%.3lf,", w.data[0][i]);
     fprintf(file, "%.3lf\n", b.data[0][0]);
