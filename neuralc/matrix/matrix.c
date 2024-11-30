@@ -6,6 +6,22 @@
 
 #include "util/logger.h"
 
+static void matrix_ensure(matrix* pOut, int rows, int cols)
+{
+    if ( pOut->data )
+    {
+        if ( pOut->rows != rows || pOut->cols != cols )
+        {
+            matrix_destroy( pOut );
+            matrix_init( pOut, rows, cols );
+        }
+    }
+    else 
+    {
+        matrix_init(pOut, rows, cols);
+    }
+}
+
 void matrix_init(matrix *pMatrix, int rows, int cols) 
 {
     if (rows < 0 || cols < 0)
@@ -398,10 +414,7 @@ void matrix_subtract(matrix* pOut, matrix a, matrix b)
 
 void matrix_scale(matrix *pOut, matrix mat, double val)
 {
-    if ( pOut->data )
-        matrix_destroy( pOut );
-    
-    matrix_init(pOut, mat.rows, mat.cols);
+    matrix_ensure( pOut, mat.rows, mat.cols );
 
     for (int i = 0; i < mat.rows; ++i)
     {

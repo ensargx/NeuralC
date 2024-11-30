@@ -19,7 +19,7 @@ add_executable(neuralc ${SRC_FILES})
 # Warnings and errors
 target_compile_options(neuralc PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -O3>
 )
 
 # include the math library required for math.h
