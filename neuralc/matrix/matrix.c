@@ -53,8 +53,6 @@ void matrix_copy(matrix *pOut, matrix mat)
         matrix_init(pOut, mat.rows, mat.cols);
     }
 
-    matrix_init(pOut, mat.rows, mat.cols);
-
     for (int i = 0; i < mat.rows; ++i)
     {
         for (int j = 0; j < mat.cols; ++j)
