@@ -56,18 +56,7 @@ void matrix_destroy(matrix *pMatrix)
 
 void matrix_copy(matrix *pOut, matrix mat)
 {
-    if ( pOut->data )
-    {
-        if (pOut->rows != mat.rows || pOut->cols != mat.cols)
-        {
-            matrix_destroy(pOut);
-            matrix_init(pOut, mat.rows, mat.cols);
-        }
-    }
-    else 
-    {
-        matrix_init(pOut, mat.rows, mat.cols);
-    }
+    matrix_ensure( pOut, mat.rows, mat.cols );
 
     for (int i = 0; i < mat.rows; ++i)
     {
@@ -212,18 +201,7 @@ matrix matrix_transpose(matrix *pOut, matrix mat)
 
 void matrix_tanh(matrix* pOut, matrix mat)
 {
-    if ( pOut->data )
-    {
-        if ( pOut->cols != mat.rows || pOut->cols != mat.cols )
-        {
-            matrix_destroy( pOut );
-            matrix_init(pOut, mat.rows, mat.cols);
-        }
-    }
-    else 
-    {
-        matrix_init(pOut, mat.rows, mat.cols);
-    }
+    matrix_ensure( pOut, mat.rows, mat.cols );
 
     for (int i = 0; i < mat.rows; ++i)
     {
@@ -350,10 +328,7 @@ double sigmoid_deriv(double x)
 
 void matrix_sigmoid_deriv(matrix *pOut, matrix mat)
 {
-    if ( pOut->data )
-        matrix_destroy( pOut );
-
-    matrix_init(pOut, mat.rows, mat.cols);
+    matrix_ensure( pOut, mat.rows, mat.cols );
 
     for (int i = 0; i < mat.rows; ++i)
     {
@@ -368,15 +343,12 @@ void matrix_sigmoid_deriv(matrix *pOut, matrix mat)
 
 double tanh_deriv(double x)
 {
-    return (1 - tanh(x)*tanh(x));
+    return 1 - pow(tanh(x), 2);
 }
 
 void matrix_tanh_deriv(matrix *pOut, matrix mat)
 {
-    if ( pOut->data )
-        matrix_destroy( pOut );
-
-    matrix_init(pOut, mat.rows, mat.cols);
+    matrix_ensure( pOut, mat.rows, mat.cols );
 
     for (int i = 0; i < mat.rows; ++i)
     {
