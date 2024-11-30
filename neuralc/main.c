@@ -1,6 +1,6 @@
-
 #include "matrix/matrix.h"
 #include "util/logger.h"
+
 #include <math.h>
 #include <stdio.h>
 
@@ -11,8 +11,8 @@ void params_to_csv(FILE* file, matrix w, matrix b, int iter, double cost);
 
 int main(void)
 {
-    const char* xpath = "data/test_data_x.csv";
-    const char* ypath = "data/test_data_y.csv";
+    const char* xpath = "data/train_data_x.csv";
+    const char* ypath = "data/train_data_y.csv";
     matrix x_ = matrix_read_csv(xpath, 1);
     matrix x = { 0 }; // (728, N)
     matrix_transpose(&x, x_);
@@ -71,19 +71,21 @@ int main(void)
     matrix_destroy(&y);
 }
 
-void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
+void sgd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 {
     int itercnt = 1000;
     double lr = 0.01;
+
+    matrix w = { 0 };
+    matrix_copy(&w, w_);
+    matrix b = { 0 };
+    matrix_copy(&b, b_);
 
     matrix z = { 0 };
     matrix a = { 0 };
 
     matrix dz = { 0 };
     matrix da = { 0 };
-
-    matrix dw = { 0 };
-    matrix_init(&dw, w.rows, w.cols);
 
     char outdir[64] = { 0 };
     sprintf(outdir, "out/sgd_%s.csv", param_name);
@@ -101,7 +103,7 @@ void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            d_cost += (expected - y_hat);
+            d_cost += (y_hat - expected);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
@@ -130,12 +132,24 @@ void sgd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
     }
 
     fclose(out_params);
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    matrix_destroy(&z);
+    matrix_destroy(&a);
+    matrix_destroy(&dz);
+    matrix_destroy(&da);
 }
 
-void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
+void gd(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 {
     int itercnt = 1000;
     double lr = 0.01;
+
+    matrix w = { 0 };
+    matrix_copy(&w, w_);
+    matrix b = { 0 };
+    matrix_copy(&b, b_);
 
     matrix z = { 0 };
     matrix a = { 0 };
@@ -164,7 +178,7 @@ void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            d_cost += (expected - y_hat);
+            d_cost += (y_hat - expected);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
@@ -208,11 +222,25 @@ void gd(matrix x, matrix y, matrix w, matrix b, const char* param_name)
     }
 
     fclose(out_params);
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    matrix_destroy(&z);
+    matrix_destroy(&a);
+    matrix_destroy(&dz);
+    matrix_destroy(&da);
+    matrix_destroy(&dw);
+    matrix_destroy(&dw);
 }
 
-void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name)
+void adam(matrix x, matrix y, matrix w_, matrix b_, const char* param_name)
 {
     int itercnt = 1000;
+
+    matrix w = { 0 };
+    matrix_copy(&w, w_);
+    matrix b = { 0 };
+    matrix_copy(&b, b_);
 
     matrix z = { 0 };
     matrix a = { 0 };
@@ -259,7 +287,7 @@ void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name)
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            d_cost += (expected - y_hat);
+            d_cost += (y_hat - expected);
             cost += (expected - y_hat) * (expected - y_hat);
         }
         d_cost /= a.cols;
@@ -308,6 +336,17 @@ void adam(matrix x, matrix y, matrix w, matrix b, const char* param_name)
     }
 
     fclose(out_params);
+
+    matrix_destroy(&w);
+    matrix_destroy(&b);
+    matrix_destroy(&z);
+    matrix_destroy(&a);
+    matrix_destroy(&dz);
+    matrix_destroy(&da);
+    matrix_destroy(&m);
+    matrix_destroy(&mt);
+    matrix_destroy(&v);
+    matrix_destroy(&vt);
 }
 
 void params_to_csv(FILE *file, matrix w, matrix b, int iter, double cost)

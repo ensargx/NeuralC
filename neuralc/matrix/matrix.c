@@ -41,11 +41,27 @@ void matrix_destroy(matrix *pMatrix)
 void matrix_copy(matrix *pOut, matrix mat)
 {
     if ( pOut->data )
-        matrix_destroy(pOut);
+    {
+        if (pOut->rows != mat.rows || pOut->cols != mat.cols)
+        {
+            matrix_destroy(pOut);
+            matrix_init(pOut, mat.rows, mat.cols);
+        }
+    }
+    else 
+    {
+        matrix_init(pOut, mat.rows, mat.cols);
+    }
 
     matrix_init(pOut, mat.rows, mat.cols);
 
-    memcpy(pOut->data, mat.data, mat.rows * mat.cols * sizeof(double));
+    for (int i = 0; i < mat.rows; ++i)
+    {
+        for (int j = 0; j < mat.cols; ++j)
+        {
+            matrix_set(*pOut, i, j, matrix_get(mat, i, j));
+        }
+    }
 }  
 
 double matrix_get(matrix matrix, int x, int y)
@@ -152,14 +168,14 @@ void matrix_add_row(matrix mat1, matrix mat2)
         return;
     }
 
-    for (int i = 0; i < mat1.cols ; i++)
+    for (int i = 0; i < mat1.rows; ++i)
     {
-        for (int j = 0; j < mat2.rows ; ++j)
+        for (int j = 0; j < mat1.cols; ++j)
         {
-            double v1 = matrix_get(mat1, j, i);
-            double v2 = matrix_get(mat2, j, 0);
+            double v1 = matrix_get(mat1, i, j);
+            double v2 = matrix_get(mat2, i, 0);
 
-            matrix_set(mat1, j, i, v1 + v2);
+            matrix_set(mat1, i, j, v1 + v2);
         }
     }
 
@@ -183,9 +199,17 @@ matrix matrix_transpose(matrix *pOut, matrix mat)
 void matrix_tanh(matrix* pOut, matrix mat)
 {
     if ( pOut->data )
-        matrix_destroy( pOut );
-
-    matrix_init(pOut, mat.rows, mat.cols);
+    {
+        if ( pOut->cols != mat.rows || pOut->cols != mat.cols )
+        {
+            matrix_destroy( pOut );
+            matrix_init(pOut, mat.rows, mat.cols);
+        }
+    }
+    else 
+    {
+        matrix_init(pOut, mat.rows, mat.cols);
+    }
 
     for (int i = 0; i < mat.rows; ++i)
     {
@@ -237,10 +261,7 @@ matrix matrix_read_csv(const char* filename, int labeled)
     if ( labeled )
         --lineCount;
 
-    int seekset = 0;
-    if ( labeled )
-        ++seekset;
-    fseek(file, seekset, SEEK_SET);
+    fseek(file, 0, SEEK_SET);
 
     // read , count.
     int commaCount = 0;
@@ -258,15 +279,19 @@ matrix matrix_read_csv(const char* filename, int labeled)
     int rows = lineCount;
     int cols = commaCount + 1;
 
-    fseek(file, seekset, SEEK_SET);
+    fseek(file, 0, SEEK_SET);
 
     matrix_init(&mat, rows, cols);
 
     // Reading data line by line
-    char line[1024];
+    char line[4096] = { 0 };
 
     if (labeled)
-        fgets(line, sizeof(line), file);
+    {
+        char nl;
+        while((nl = fgetc(file)) && (nl != '\n'))
+            ;
+    }
 
     int row = 0;
     while (fgets(line, sizeof(line), file) && row < rows)
@@ -276,7 +301,7 @@ matrix matrix_read_csv(const char* filename, int labeled)
 
         while (token != NULL && col < cols)
         {
-            double val = atof(token);
+            double val = strtod(token, NULL);
             matrix_set(mat, row, col, val);
             token = strtok(NULL, ",");
             col++;
