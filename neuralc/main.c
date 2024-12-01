@@ -81,8 +81,8 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
     double lr = 0.01;
 
     clock_t start, end;
-    double elapsed;
-    start = clock();
+    double elapsed = 0;
+    double totaltime = 0;
 
     matrix w = { 0 };
     matrix_copy(&w, w_);
@@ -102,6 +102,8 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
         matrix_dot(&z, w, x);
         matrix_tanh(&a, z);
 
+        int dataidx = iter % x.rows;
+
         double d_cost = 0;
         double cost = 0;
         for (int i = 0; i < a.cols; ++i)
@@ -109,24 +111,20 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
             double diff = y_hat - expected;
-            d_cost += 2*diff;
             cost += pow(diff, 2);
         }
-        d_cost /= a.cols;
         cost /= a.cols;
 
-        matrix_tanh_deriv(&dz, z);
-
-        matrix_scale(&da, dz, d_cost);
+        start = clock();
 
         double correct = check_correct(w, x_test, y_test);
 
-        end = clock();
-        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        params_to_csv(out_params, w, iter, cost, totaltime, correct);
 
-        params_to_csv(out_params, w, iter, cost, elapsed, correct);
+        d_cost = 2 * ( a.data[0][dataidx] - y.data[0][dataidx] );
 
-        int dataidx = iter % x.rows;
+        matrix_tanh_deriv(&dz, z);
+        matrix_scale(&da, dz, d_cost);
 
         for (int i = 0; i < w.rows; ++i)
         {
@@ -136,6 +134,10 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
                 w.data[i][j] -= lr * sum;
             }
         }
+
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        totaltime += elapsed;
 
         if ( iter % 100 == 0 )
             log_debug("SGD = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
@@ -156,8 +158,8 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
     double lr = 0.01;
 
     clock_t start, end;
-    double elapsed;
-    start = clock();
+    double elapsed = 0;
+    double totaltime = 0;
 
     matrix w = { 0 };
     matrix_copy(&w, w_);
@@ -180,6 +182,8 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         matrix_dot(&z, w, x);
         matrix_tanh(&a, z);
 
+        start = clock();
+
         double d_cost = 0;
         double cost = 0;
         for (int i = 0; i < a.cols; ++i)
@@ -194,17 +198,13 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         cost /= a.cols;
 
         matrix_tanh_deriv(&dz, z);
-
         matrix_zero(dw);
 
         double correct = check_correct(w, x_test, y_test);
 
         matrix_scale(&da, dz, d_cost);
 
-        end = clock();
-        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
-
-        params_to_csv(out_params, w, iter, cost, elapsed, correct);
+        params_to_csv(out_params, w, iter, cost, totaltime, correct);
 
         for (int k_ = iter * BATCH_SIZE; k_ < (iter+1)*BATCH_SIZE; ++k_)
         {
@@ -228,6 +228,10 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
             }
         }
 
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        totaltime += elapsed;
+
         if ( iter % 100 == 0 )
             log_debug("GD = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
 
@@ -246,8 +250,8 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
 void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, matrix y_test)
 {
     clock_t start, end;
-    double elapsed;
-    start = clock();
+    double elapsed = 0;
+    double totaltime = 0;
 
     matrix w = { 0 };
     matrix_copy(&w, w_);
@@ -299,22 +303,20 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
             double diff = y_hat - expected;
-            d_cost += 2*diff;
             cost += pow(diff, 2);
         }
-        d_cost /= a.cols;
         cost /= a.cols;
 
-        matrix_tanh_deriv(&dz, z);
-
-        matrix_scale(&da, dz, d_cost);
+        start = clock();
 
         double correct = check_correct(w, x_test, y_test);
 
-        end = clock();
-        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        params_to_csv(out_params, w, iter, cost, totaltime, correct);
 
-        params_to_csv(out_params, w, iter, cost, elapsed, correct);
+        d_cost = 2 * ( a.data[0][dataidx] - y.data[0][dataidx] );
+
+        matrix_tanh_deriv(&dz, z);
+        matrix_scale(&da, dz, d_cost);
 
         t += 1;
 
@@ -339,6 +341,10 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
                 w.data[i][j] -= alpha * mt.data[i][j] / (pow(vt.data[i][j], 0.5) + epsilon);
             }
         }
+
+        end = clock();
+        elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        totaltime += elapsed;
 
         if ( iter % 100 == 0 )
             log_debug("ADAM = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
