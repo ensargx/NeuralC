@@ -8,7 +8,7 @@
 void sgd(matrix x, matrix y, matrix w, const char* param_name, matrix x_test, matrix y_test);
 void gd(matrix x, matrix y, matrix w, const char* param_name, matrix x_test, matrix y_test);
 void adam(matrix x, matrix y, matrix w, const char* param_name, matrix x_test, matrix y_test);
-void params_to_csv(FILE* file, matrix w, int iter, double cost, double elapsed);
+void params_to_csv(FILE* file, matrix w, int iter, double cost, double elapsed, double correct);
 double check_correct(matrix w, matrix x_test, matrix y_test);
 
 const int BATCH_SIZE = 1000;
@@ -44,35 +44,29 @@ int main(void)
     matrix_destroy(&y_test_);
 
     int n = 28;
+    matrix w = { 0 };
 
-    matrix w = matrix_create_random(1, n*n+1, -1, 1, 54);
-    adam(x, y, w, "54", x_test, y_test);
-    return 0;
-
+    matrix_create_random(&w, 1, n*n+1, -1, 1, 54);
     gd(x, y, w, "54", x_test, y_test);
     sgd(x, y, w, "54", x_test, y_test);
     adam(x, y, w, "54", x_test, y_test);
 
-    matrix_destroy(&w);
-    w = matrix_create_random(1, n*n+1, -1, 1, 65);
+    matrix_create_random(&w, 1, n*n+1, -1, 1, 65);
     gd(x, y, w, "65", x_test, y_test);
     sgd(x, y, w, "65", x_test, y_test);
     adam(x, y, w, "65", x_test, y_test);
 
-    matrix_destroy(&w);
-    w = matrix_create_random(1, n*n+1, -1, 1, 98);
+    matrix_create_random(&w, 1, n*n+1, -1, 1, 98);
     gd(x, y, w, "98", x_test, y_test);
     sgd(x, y, w, "98", x_test, y_test);
     adam(x, y, w, "98", x_test, y_test);
 
-    matrix_destroy(&w);
-    w = matrix_create_random(1, n*n+1, -1, 1, 120);
+    matrix_create_random(&w, 1, n*n+1, -1, 1, 120);
     gd(x, y, w, "120", x_test, y_test);
     sgd(x, y, w, "120", x_test, y_test);
     adam(x, y, w, "120", x_test, y_test);
 
-    matrix_destroy(&w);
-    w = matrix_create_random(1, n*n+1, -1, 1, 10);
+    matrix_create_random(&w, 1, n*n+1, -1, 1, 10);
     gd(x, y, w, "10", x_test, y_test);
     sgd(x, y, w, "10", x_test, y_test);
     adam(x, y, w, "10", x_test, y_test);
@@ -114,8 +108,9 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            d_cost += (y_hat - expected);
-            cost += (expected - y_hat) * (expected - y_hat);
+            double diff = y_hat - expected;
+            d_cost += 2*diff;
+            cost += pow(diff, 2);
         }
         d_cost /= a.cols;
         cost /= a.cols;
@@ -129,7 +124,7 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
         end = clock();
         elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
 
-        params_to_csv(out_params, w, iter, cost, elapsed);
+        params_to_csv(out_params, w, iter, cost, elapsed, correct);
 
         int dataidx = iter % x.rows;
 
@@ -142,7 +137,8 @@ void sgd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, m
             }
         }
 
-        log_debug("ITER: %d, COST SGD: %lf, CORRECT: %lf", iter, cost, correct);
+        if ( iter % 100 == 0 )
+            log_debug("SGD = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
 
     }
 
@@ -190,8 +186,9 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            d_cost += (expected - y_hat);
-            cost += (expected - y_hat) * (expected - y_hat);
+            double diff = y_hat - expected;
+            d_cost += 2*diff;
+            cost += pow(diff, 2);
         }
         d_cost /= a.cols;
         cost /= a.cols;
@@ -207,7 +204,7 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         end = clock();
         elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
 
-        params_to_csv(out_params, w, iter, cost, elapsed);
+        params_to_csv(out_params, w, iter, cost, elapsed, correct);
 
         for (int k_ = iter * BATCH_SIZE; k_ < (iter+1)*BATCH_SIZE; ++k_)
         {
@@ -226,13 +223,13 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         {
             for (int j = 0; j < w.cols; ++j)
             {
-                dw.data[i][j] /= BATCH_SIZE;
+                dw.data[i][j] /= (double)BATCH_SIZE;
                 w.data[i][j] -= lr * dw.data[i][j];
             }
         }
 
         if ( iter % 100 == 0 )
-            log_debug("ITER: %d, COST GD: %lf, CORRECT: %lf", iter, cost, correct);
+            log_debug("GD = ITER: %d, COST: %lf, CORRECT: %lf", iter, cost, correct);
 
     }
 
@@ -301,7 +298,7 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
         {
             double y_hat = a.data[0][i];
             double expected = y.data[0][i];
-            double diff = expected - y_hat;
+            double diff = y_hat - expected;
             d_cost += 2*diff;
             cost += pow(diff, 2);
         }
@@ -317,7 +314,7 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
         end = clock();
         elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
 
-        params_to_csv(out_params, w, iter, cost, elapsed);
+        params_to_csv(out_params, w, iter, cost, elapsed, correct);
 
         t += 1;
 
@@ -360,9 +357,9 @@ void adam(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, 
     matrix_destroy(&vt);
 }
 
-void params_to_csv(FILE *file, matrix w, int iter, double cost, double elapsed)
+void params_to_csv(FILE *file, matrix w, int iter, double cost, double elapsed, double correct)
 {
-    fprintf(file, "%d,%lf,%lf,", iter, cost, elapsed);
+    fprintf(file, "%d,%lf,%lf,%lf,", iter, cost, elapsed, correct);
     for (int i = 0; i < w.cols - 1; ++i)
         fprintf(file, "%.3lf,", w.data[0][i]);
     fprintf(file, "%.3lf\n", w.data[0][w.cols-1]);

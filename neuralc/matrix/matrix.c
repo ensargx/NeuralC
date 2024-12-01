@@ -120,11 +120,9 @@ int matrix_dot(matrix* pOut, matrix x, matrix y)
     return 1;
 }
 
-matrix matrix_create_random(int rows, int cols, double lower, double upper, int seed)
+void matrix_create_random(matrix *pOut, int rows, int cols, double lower, double upper, int seed)
 {
-    matrix mat;
-
-    matrix_init(&mat, rows, cols);
+    matrix_ensure(pOut, rows, cols);
 
     srand(seed);
 
@@ -136,11 +134,9 @@ matrix matrix_create_random(int rows, int cols, double lower, double upper, int 
         for (int j = 0; j < cols; ++j)
         {
             double val = lower + (rand() / div);
-            matrix_set(mat, i, j, val);
+            matrix_set(*pOut, i, j, val);
         }
     }
-
-    return mat;
 }
 
 void matrix_swap(matrix *pMat1, matrix *pMat2)
@@ -272,7 +268,7 @@ matrix matrix_read_csv(const char* filename, int labeled)
     matrix_init(&mat, rows, cols);
 
     // Reading data line by line
-    char line[4096] = { 0 };
+    char line[4096*4] = { 0 };
 
     if (labeled)
     {
@@ -298,21 +294,6 @@ matrix matrix_read_csv(const char* filename, int labeled)
     }
 
     fclose(file);
-
-    return mat;
-
-
-    for (int i = 0; i < cols; ++i)
-    {
-        for (int j = 0; j < rows; ++j)
-        {
-            // parse until ','
-            double val = 0;
-            (void)fscanf(file, "%lf", &val);
-            matrix_set(mat, j, i, val);
-            fgetc(file);
-        }
-    }
 
     return mat;
 }
