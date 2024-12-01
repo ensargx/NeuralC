@@ -12,7 +12,7 @@ void params_to_csv(FILE* file, matrix w, int iter, double cost, double elapsed, 
 double check_correct(matrix w, matrix x_test, matrix y_test);
 
 const int BATCH_SIZE = 1000;
-const int EPOCHS = 1000;
+const int EPOCHS = 500;
 
 int main(void)
 {
@@ -223,7 +223,7 @@ void gd(matrix x, matrix y, matrix w_, const char* param_name, matrix x_test, ma
         {
             for (int j = 0; j < w.cols; ++j)
             {
-                dw.data[i][j] /= (double)BATCH_SIZE;
+                dw.data[i][j] /= BATCH_SIZE;
                 w.data[i][j] -= lr * dw.data[i][j];
             }
         }
