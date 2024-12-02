@@ -318,7 +318,7 @@ void matrix_sigmoid_deriv(matrix *pOut, matrix mat)
     }
 }
 
-double tanh_deriv(double x)
+static double tanh_deriv(double x)
 {
     return 1 - pow(tanh(x), 2);
 }
