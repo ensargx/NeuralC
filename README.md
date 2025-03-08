@@ -9,12 +9,18 @@
 - **C Dili ile Hızlı ve Hafif Çalışma**: Minimum bağımlılık ile yüksek performans.
 - **Yorumlama ve Analiz**: Optimizasyon süreçlerini detaylı olarak analiz eder.
 
+## ✅ Çıktılar
+
+- **TSNE Çıktısı**: Algoritmaların parametlerelinin değişimini gösterir.
+![tsne](plot/tsne.png)
+- **Süre/Cost, Epoch/Cost, Süre/Accuracy, Epoch/Accuracy**: Süre, Cost, Epoch ve Accuracy karşılaştırmaları.
+![tsne](plot/comparison_10.png)
+
 ## 🛠️ Kurulum ve Çalıştırma
 
 ### Gereksinimler
 - CMake
 - C derleyicisi (GCC, Clang veya MSVC)
-- Gnuplot (Grafik çizimi için)
 
 ### Derleme ve Çalıştırma
 1. Proje dosyalarını indirin veya klonlayın:
@@ -48,8 +54,5 @@
    - Test verileri: `data/data_test_x.csv`, `data/data_test_y.csv`
 3. Sonuçlar **gnuplot** kullanılarak grafiksel olarak gösterilecektir.
 4. Analiz çıktıları terminalde görüntülenir.
-
-## ✅ Lisans
-Bu proje açık kaynak olup MIT lisansı ile dağıtılmaktadır.
 
 ---
